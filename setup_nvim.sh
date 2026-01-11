@@ -10,7 +10,7 @@ echo "🚀 Starte Neovim Komplett-Setup auf CachyOS..."
 # 1. System Update & Basis-Tools
 echo "📦 Installiere System-Abhängigkeiten..."
 sudo pacman -Syu --noconfirm
-sudo pacman -S --noconfirm git base-devel unzip curl wget fd ripgrep nodejs npm python-pip go ruby ttf-jetbrains-mono-nerd neovim inotify-tools
+sudo pacman -S --noconfirm git base-devel unzip curl wget fd ripgrep nodejs npm python-pip go ruby ttf-jetbrains-mono-nerd neovim inotify-tools shellcheck lua-language-server vscode-css-languageserver
 
 # 2. Deine Lua-Konfiguration von GitHub klonen
 echo "📥 Klone deine Neovim-Konfiguration von GitHub..."
