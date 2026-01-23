@@ -237,8 +237,9 @@ After=graphical-session.target
 Type=simple
 ExecStart=/bin/bash %h/scripts/wallpaper_engine.sh
 Restart=always
-RestartSec=10
-PassEnvironment=WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE DISPLAY
+# Wichtig: Wir warten 3 Sekunden vor dem Neustart, falls es kracht
+RestartSec=3
+PassEnvironment=WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE
 
 [Install]
 WantedBy=graphical-session.target
