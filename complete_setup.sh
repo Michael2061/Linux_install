@@ -50,29 +50,41 @@ fi
 echo "👤 Konfiguriere Nutzergruppen und Shell..."
 sudo usermod -aG video,audio,input $USER
 
+# Pfad zur ZSH-Konfiguration
+ZSH_CONF="$HOME/.zshrc"
+
+# Erstelle eine temporäre Datei mit den Hyprland-Variablen ZUERST (Wichtig für Signature)
+echo '# --- HYPRLAND FIX START ---
+if [ -z "$XDG_RUNTIME_DIR" ]; then
+    export XDG_RUNTIME_DIR=/run/user/$(id -u)
+fi
+export HYPRLAND_INSTANCE_SIGNATURE=$(ls -t $XDG_RUNTIME_DIR/hypr 2>/dev/null | head -n 1)
+export XDG_CURRENT_DESKTOP=Hyprland
+export XDG_SESSION_TYPE=wayland
+export XDG_SESSION_DESKTOP=Hyprland
+# --- HYPRLAND FIX END ---
+' > ~/.zshrc.tmp
+
+# Hänge die alte .zshrc an die neue temporäre Datei an (falls sie existiert)
+if [ -f "$ZSH_CONF" ]; then
+    cat "$ZSH_CONF" >> ~/.zshrc.tmp
+fi
+
+# Überschreibe die echte .zshrc mit der korrekten Reihenfolge (Fix oben)
+mv ~/.zshrc.tmp "$ZSH_CONF"
+
+# Oh-My-Zsh Installation (nur wenn nicht vorhanden)
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
     sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)" "" --unattended
 fi
 sudo chsh -s $(which zsh) $USER
 
-# FIX: Umgebungsvariablen NUR hinzufügen, wenn sie noch nicht drin sind
-echo "🔍 Prüfe .zshrc Einträge..."
-ZSH_CONF="$HOME/.zshrc"
-
-# Funktion zum sauberen Hinzufügen (verhindert Dopplungen)
+# Zusätzliche Einträge (wie fastfetch) ans Ende hängen
 add_to_zsh() {
-    # Wir prüfen, ob der exakte Text bereits in der Datei steht
     if ! grep -Fxq "$1" "$ZSH_CONF" 2>/dev/null; then
         echo "$1" >> "$ZSH_CONF"
     fi
 }
-
-# --- NEU: Hyprland Instanz-Fix ---
-add_to_zsh 'if [ -z "$XDG_RUNTIME_DIR" ]; then'
-add_to_zsh '    export XDG_RUNTIME_DIR=/run/user/$(id -u)'
-add_to_zsh 'fi'
-add_to_zsh 'export HYPRLAND_INSTANCE_SIGNATURE=$(ls -t $XDG_RUNTIME_DIR/hypr 2>/dev/null | head -n 1)'
-# ---------------------------------
 
 # WICHTIG: > /dev/null 2>&1 unterdrückt das "ok" von hyprctl
 add_to_zsh 'export XDG_CURRENT_DESKTOP=Hyprland'
