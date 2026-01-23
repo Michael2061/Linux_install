@@ -232,15 +232,13 @@ cat <<'EOF' > "$HOME/.config/systemd/user/wallpaper-engine.service"
 [Unit]
 Description=Start Wallpaper Engine and Waybar
 After=graphical-session.target
-PartOf=graphical-session.target
 
 [Service]
 Type=simple
 ExecStart=/bin/bash %h/scripts/wallpaper_engine.sh
-Restart=on-failure
-RestartSec=5
-# Wichtig für Wayland Umgebungsvariablen
-PassEnvironment=WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE
+Restart=always
+RestartSec=10
+PassEnvironment=WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE DISPLAY
 
 [Install]
 WantedBy=graphical-session.target
