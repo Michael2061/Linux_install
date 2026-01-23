@@ -4,7 +4,7 @@
 DOTFILES_REPO="https://github.com/Michael2061/hyperland.git"
 TEMP_DIR="$HOME/temp_dots"
 
-echo "🚀 Starte das vollständige CachyOS Setup..."
+echo "🚀 Starte das optimierte CachyOS Setup (SwayOSD Fix)..."
 
 # 1. Hardware-Erkennung
 IS_LAPTOP=false
@@ -13,7 +13,7 @@ if [ -d /sys/class/power_supply/BAT0 ]; then
     echo "💻 Laptop erkannt. Zusätzliche Treiber werden installiert..."
 fi
 
-# 2. System Update & Pakete (JETZT MIT SWAYOSD ÜBER PACMAN)
+# 2. System Update & Pakete
 echo "📦 Installiere System-Pakete..."
 sudo pacman -Syu --noconfirm
 
@@ -28,7 +28,7 @@ PACKAGES=(
     vlc obs-studio obsidian code foot alacritty
     libreoffice-still libreoffice-still-de thunderbird
     dunst polkit-kde-agent
-    swayosd  # Korrektur: Direkt über pacman für bessere Service-Erkennung
+    swayosd # Jetzt offiziell über pacman
 )
 
 if [ "$IS_LAPTOP" = true ]; then
@@ -43,24 +43,25 @@ AUR_HELPER=$(command -v paru || command -v yay)
 if [ -z "$AUR_HELPER" ]; then
     echo "❌ Kein AUR-Helper gefunden!"
 else
-    # swayosd-git entfernt, da jetzt oben in pacman enthalten
+    # swayosd-git entfernt, da in pacman enthalten
     $AUR_HELPER -S --noconfirm pyprland sddm-sugar-candy-git
 fi
 
-# 4. Shell-Konfiguration
-echo "🐚 Konfiguriere Zsh..."
+# 4. Nutzergruppen & Shell
+echo "👤 Konfiguriere Nutzergruppen..."
+# Wichtig für SwayOSD Zugriff auf Keyboard/Backlight
+sudo usermod -aG input $USER
+sudo usermod -aG video $USER
+
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
     sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)" "" --unattended
 fi
 sudo chsh -s $(which zsh) $USER
 
-if [ "$IS_LAPTOP" = true ]; then
-    sudo systemctl enable --now bluetooth
-fi
-
 # 5. Dotfiles & Verzeichnisse
 echo "📥 Klone Konfigurationsdateien..."
 rm -rf $TEMP_DIR
+# Tipp: Nutze SSH (git@github.com:...), falls du deinen Key schon hinterlegt hast
 git clone $DOTFILES_REPO $TEMP_DIR
 mkdir -p ~/.config/{hypr,kitty,mangohud,rofi,waybar} ~/scripts ~/Pictures/Wallpapers
 
@@ -80,7 +81,6 @@ cat <<EOF > ~/.tmux.conf
 set -g mouse on
 set -g status-style bg=default,fg=green
 EOF
-mkdir -p ~/.config
 echo '--enable-features=UseOzonePlatform
 --ozone-platform=wayland' > ~/.config/code-flags.conf
 
@@ -95,13 +95,13 @@ cp -r $TEMP_DIR/mangohud/* ~/.config/mangohud/
 chmod +x ~/scripts/*.sh
 rm -rf $TEMP_DIR
 
-# 9. Services aktivieren
+# 9. Services aktivieren (Korrektur: sudo systemctl für System-Unit)
 echo "🔧 Aktiviere Services..."
-systemctl --user daemon-reload
-systemctl --user enable --now swayosd-libinput-backend.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now swayosd-libinput-backend.service
 
-# 10. GTK-Einstellungen (HIER IST PUNKT 10)
-echo "🎨 Setze System-Schrift & Themes..."
+# 10. GTK-Einstellungen
+echo "🎨 Setze System-Schrift..."
 GTK_CONF="[Settings]
 gtk-font-name=JetBrainsMono Nerd Font 11
 gtk-theme-name=CachyOS-Dark
@@ -121,4 +121,4 @@ if ! command -v rustup &> /dev/null; then
 fi
 $HOME/.cargo/bin/rustup default stable
 
-echo "✨ SETUP ERFOLGREICH! Bitte jetzt 'reboot' ausführen."
+echo "✨ SETUP ERFOLGREICH! Bitte jetzt 'reboot' ausführen, damit Gruppen-Änderungen greifen."
