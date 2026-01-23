@@ -27,7 +27,7 @@ PACKAGES=(
     zsh tmux thunar thunar-archive-plugin thunar-volman tumbler
     vlc obs-studio obsidian code foot alacritty
     libreoffice-still libreoffice-still-de thunderbird
-    dunst polkit-kde-agent  # <--- HIER EINFACH HINZUFÜGEN
+    dunst polkit-kde-agent
 )
 
 if [ "$IS_LAPTOP" = true ]; then
@@ -93,7 +93,8 @@ cp -r $TEMP_DIR/mangohud/* ~/.config/mangohud/
 chmod +x ~/scripts/*.sh
 rm -rf $TEMP_DIR
 
-# 9. Services aktivieren
+# 9. Services aktivieren (KORRIGIERT: swayosd statt swayos)
+echo "🔧 Aktiviere Services..."
 systemctl --user enable --now swayosd-libinput-backend.service
 
 # 10. GTK-Einstellungen
@@ -109,16 +110,13 @@ echo -e "$GTK_CONF" > ~/.config/gtk-3.0/settings.ini
 echo -e "$GTK_CONF" > ~/.config/gtk-4.0/settings.ini
 fc-cache -fv
 
-# 11. Rust Installation (KORRIGIERT)
+# 11. Rust Installation
 echo "🦀 Installiere Rust..."
 if ! command -v rustup &> /dev/null; then
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    # Fix für den "non-constant source" Fehler:
-    # Wir benutzen den absoluten Pfad und exportieren ihn direkt für diese Session
     export PATH="$HOME/.cargo/bin:$PATH"
 fi
 
-# Rustup Befehl mit vollem Pfad aufrufen, falls die Shell ihn noch nicht kennt
 $HOME/.cargo/bin/rustup default stable
 
 echo "✨ SETUP ERFOLGREICH! System ist für $([ "$IS_LAPTOP" = true ] && echo "Laptop" || echo "Desktop") angepasst."
