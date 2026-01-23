@@ -67,11 +67,17 @@ add_to_zsh() {
     fi
 }
 
+# --- NEU: Hyprland Instanz-Fix ---
+add_to_zsh 'if [ -z "$XDG_RUNTIME_DIR" ]; then'
+add_to_zsh '    export XDG_RUNTIME_DIR=/run/user/$(id -u)'
+add_to_zsh 'fi'
+add_to_zsh 'export HYPRLAND_INSTANCE_SIGNATURE=$(ls -t $XDG_RUNTIME_DIR/hypr 2>/dev/null | head -n 1)'
+# ---------------------------------
+
 # WICHTIG: > /dev/null 2>&1 unterdrückt das "ok" von hyprctl
 add_to_zsh 'export XDG_CURRENT_DESKTOP=Hyprland'
 add_to_zsh 'export XDG_SESSION_TYPE=wayland'
 add_to_zsh 'export XDG_SESSION_DESKTOP=Hyprland'
-add_to_zsh 'hyprctl keyword input:kb_layout de > /dev/null 2>&1'
 add_to_zsh 'fastfetch'
 
 # 5. Dotfiles & Verzeichnisse
