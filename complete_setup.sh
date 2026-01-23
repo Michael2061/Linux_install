@@ -219,4 +219,39 @@ Section "InputClass"
 EndSection
 EOF
 
+# 13. Systemd-User-Service für Waybar & Wallpaper einrichten
+echo "--- 🛠️ Richte Systemd-User-Service für Waybar & Wallpaper ein ---"
+
+# Verzeichnis erstellen (falls nicht vorhanden)
+mkdir -p "$HOME/.config/systemd/user/"
+
+# Die Service-Datei schreiben
+# Wir nutzen <<'EOF' (mit Anführungszeichen), damit $HOME im File nicht sofort ersetzt wird,
+# sondern erst wenn der Service ausgeführt wird.
+cat <<'EOF' > "$HOME/.config/systemd/user/wallpaper-engine.service"
+[Unit]
+Description=Start Wallpaper Engine and Waybar
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/bin/bash %h/scripts/wallpaper_engine.sh
+Restart=on-failure
+RestartSec=5
+# Wichtig für Wayland Umgebungsvariablen
+PassEnvironment=WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE
+
+[Install]
+WantedBy=graphical-session.target
+EOF
+
+# Systemd mitteilen, dass es eine neue Datei gibt
+systemctl --user daemon-reload
+
+# Den Service so einstellen, dass er beim Booten automatisch startet
+systemctl --user enable wallpaper-engine.service
+
+echo "✅ Systemd-Service wurde installiert und aktiviert."
+
 echo "✨ SETUP ERFOLGREICH! Bitte jetzt 'reboot' ausführen."
