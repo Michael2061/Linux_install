@@ -27,6 +27,7 @@ PACKAGES=(
     zsh tmux thunar thunar-archive-plugin thunar-volman tumbler
     vlc obs-studio obsidian code foot alacritty
     libreoffice-still libreoffice-still-de thunderbird
+    dunst polkit-kde-agent  # <--- HIER EINFACH HINZUFÜGEN
 )
 
 if [ "$IS_LAPTOP" = true ]; then
