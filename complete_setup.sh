@@ -53,12 +53,13 @@ sudo usermod -aG video,audio,input $USER
 # Pfad zur ZSH-Konfiguration
 ZSH_CONF="$HOME/.zshrc"
 
-# Erstelle eine temporäre Datei mit den Hyprland-Variablen ZUERST (Wichtig für Signature)
+# Erstelle eine temporäre Datei mit dem AUTOMATISCHEN SIGNATUR-FINDER ZUERST
 echo '# --- HYPRLAND FIX START ---
-if [ -z "$XDG_RUNTIME_DIR" ]; then
-    export XDG_RUNTIME_DIR=/run/user/$(id -u)
+# Automatischer Hyprland-Signatur-Finder
+if [ -z "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
+    export HYPRLAND_INSTANCE_SIGNATURE=$(ls -t /run/user/$(id -u)/hypr 2>/dev/null | head -n 1)
 fi
-export HYPRLAND_INSTANCE_SIGNATURE=$(ls -t $XDG_RUNTIME_DIR/hypr 2>/dev/null | head -n 1)
+
 export XDG_CURRENT_DESKTOP=Hyprland
 export XDG_SESSION_TYPE=wayland
 export XDG_SESSION_DESKTOP=Hyprland
