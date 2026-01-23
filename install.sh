@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Liste der Scripte, die ausgeführt werden sollen
-SCRIPTS=("./complete_setup.sh" "./setup_nvim.sh")
+SCRIPTS=("./setup_nvim.sh" "./complete_setup.sh")
 
 echo "--- Starte Installations-Prozess ---"
 
