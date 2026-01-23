@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Variablen - BITTE ANPASSEN
-DOTFILES_REPO="https://github.com/Michael2061/hyperland.git"
+DOTFILES_REPO="https://github.com/Michael2061/hyprland.git"
 TEMP_DIR="$HOME/temp_dots"
 
 echo "🚀 Starte das finale CachyOS Setup..."
@@ -99,7 +99,7 @@ add_to_zsh 'fastfetch'
 # 5. Dotfiles & Verzeichnisse
 echo "📥 Klone Konfigurationsdateien..."
 rm -rf $TEMP_DIR
-# Falls du deinen SSH Key hinterlegt hast, ändere die URL zu: git@github.com:Michael2061/hyperland.git
+# Falls du deinen SSH Key hinterlegt hast, ändere die URL zu: git@github.com:Michael2061/hyprland.git
 git clone $DOTFILES_REPO $TEMP_DIR
 mkdir -p ~/.config/{hypr,kitty,mangohud,rofi,waybar} ~/scripts ~/Pictures/Wallpapers
 
