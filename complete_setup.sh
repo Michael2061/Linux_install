@@ -93,6 +93,9 @@ cp -r $TEMP_DIR/mangohud/* ~/.config/mangohud/
 chmod +x ~/scripts/*.sh
 rm -rf $TEMP_DIR
 
+echo "⚙️  Initialisiere Design..."
+bash ~/scripts/wallpaper_engine.sh
+
 # 9. Services aktivieren
 echo "🔧 Aktiviere Services..."
 sudo systemctl daemon-reload
