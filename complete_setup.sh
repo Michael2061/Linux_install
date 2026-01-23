@@ -28,7 +28,7 @@ PACKAGES=(
     vlc obs-studio obsidian code foot alacritty
     libreoffice-still libreoffice-still-de thunderbird
     dunst polkit-kde-agent
-    swayosd swww pywal-16-colors
+    swayosd swww
 )
 
 if [ "$IS_LAPTOP" = true ]; then
