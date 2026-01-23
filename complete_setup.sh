@@ -52,9 +52,26 @@ sudo usermod -aG input $USER
 sudo usermod -aG video $USER
 
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
+    echo "Installer Oh-My-Zsh..."
     sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)" "" --unattended
 fi
 sudo chsh -s $(which zsh) $USER
+
+# --- NEU: Zsh-Umgebung fixen (Muss NACH dem Oh-My-Zsh Install kommen) ---
+echo "🔧 Optimiere .zshrc für Wayland & Tastatur..."
+# Wir löschen alte Einträge, um Dopplungen zu vermeiden
+sed -i '/XDG_CURRENT_DESKTOP/d' "$HOME/.zshrc" 2>/dev/null
+sed -i '/kb_layout/d' "$HOME/.zshrc" 2>/dev/null
+
+{
+    echo 'export XDG_CURRENT_DESKTOP=Hyprland'
+    echo 'export XDG_SESSION_TYPE=wayland'
+    echo 'export XDG_SESSION_DESKTOP=Hyprland'
+    echo 'export LANG=de_DE.UTF-8'
+    echo '# Erzwingt deutsches Layout in jedem Terminal'
+    echo 'hyprctl keyword input:kb_layout de 2>/dev/null'
+    echo 'fastfetch'
+} >> "$HOME/.zshrc"
 
 # 5. Dotfiles & Verzeichnisse
 echo "📥 Klone Konfigurationsdateien..."
@@ -83,6 +100,7 @@ echo '--enable-features=UseOzonePlatform
 --ozone-platform=wayland' > ~/.config/code-flags.conf
 
 # 8. Dateien kopieren
+echo "📂 Kopiere Konfigurationsdateien..."
 cp -r $TEMP_DIR/hypr/* ~/.config/hypr/
 cp -r $TEMP_DIR/waybar/* ~/.config/waybar/
 cp -r $TEMP_DIR/scripts/* ~/scripts/
@@ -90,10 +108,25 @@ cp -r $TEMP_DIR/kitty/* ~/.config/kitty/
 cp -r $TEMP_DIR/rofi/* ~/.config/rofi/
 cp -r $TEMP_DIR/mangohud/* ~/.config/mangohud/
 
+# --- NEU: Fixes direkt nach dem Kopieren ---
+echo "📏 Fixe Waybar & Kitty Konfiguration..."
+
+# Waybar Fix: Ändert die Höhe von 34 auf 52 (behebt deinen Log-Fehler)
+if [ -f "$HOME/.config/waybar/config" ]; then
+    sed -i 's/"height": 34/"height": 52/g' "$HOME/.config/waybar/config"
+fi
+
+# Kitty Fix: Entfernt den ungültigen Befehl
+if [ -f "$HOME/.config/kitty/kitty.conf" ]; then
+    sed -i '/exec_once fastfetch/d' "$HOME/.config/kitty/kitty.conf"
+fi
+
+# Berechtigungen setzen
 chmod +x ~/scripts/*.sh
 rm -rf $TEMP_DIR
 
 echo "⚙️  Initialisiere Design..."
+# Jetzt startet das Design mit der bereits korrigierten Waybar-Höhe
 bash ~/scripts/wallpaper_engine.sh
 
 # 9. Services aktivieren
@@ -137,5 +170,20 @@ if [ -f ~/.config/swayosd/style.css ]; then
     sed -i "s|__HOME__|$HOME|g" ~/.config/swayosd/style.css
     swayosd-client --reload-style
 fi
+
+# 12. Finaler System-Tastatur-Fix
+echo "⌨️  Setze System-Layout auf DE..."
+sudo localectl set-x11-keymap de
+sudo localectl set-keymap de-latin1
+
+sudo mkdir -p /etc/X11/xorg.conf.d/
+cat <<EOF | sudo tee /etc/X11/xorg.conf.d/00-keyboard.conf
+Section "InputClass"
+        Identifier "system-keyboard"
+        MatchIsKeyboard "on"
+        Option "XkbLayout" "de"
+        Option "XkbVariant" "nodeadkeys"
+EndSection
+EOF
 
 echo "✨ SETUP ERFOLGREICH! Bitte jetzt 'reboot' ausführen."
