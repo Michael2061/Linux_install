@@ -50,14 +50,17 @@ fi
 echo "👤 Konfiguriere Nutzergruppen und Shell..."
 sudo usermod -aG video,audio,input $USER
 
-# Pfad zur ZSH-Konfiguration
 ZSH_CONF="$HOME/.zshrc"
 
-# Erstelle eine temporäre Datei mit dem AUTOMATISCHEN SIGNATUR-FINDER ZUERST
+# Erstelle eine neue .zshrc mit dem Signatur-Finder und Tastatur-Force GANZ OBEN
 echo '# --- HYPRLAND FIX START ---
-# Automatischer Hyprland-Signatur-Finder
-if [ -z "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
-    export HYPRLAND_INSTANCE_SIGNATURE=$(ls -t /run/user/$(id -u)/hypr 2>/dev/null | head -n 1)
+# Fix für die Hyprland-Signatur (Wichtig für hyprctl & Waybar)
+export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+export HYPRLAND_INSTANCE_SIGNATURE=$(ls -t $XDG_RUNTIME_DIR/hypr 2>/dev/null | head -n 1)
+
+# Erzwinge Deutsch, sobald ein Terminal geöffnet wird
+if [ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
+    hyprctl keyword input:kb_layout de > /dev/null 2>&1
 fi
 
 export XDG_CURRENT_DESKTOP=Hyprland
@@ -192,11 +195,20 @@ if [ -f ~/.config/swayosd/style.css ]; then
     swayosd-client --reload-style
 fi
 
-# 12. Finaler System-Tastatur-Fix
-echo "⌨️  Setze System-Layout auf DE..."
+# 12. Finaler System-Tastatur-Fix (Hardware & System)
+echo "⌨️ Setze System-Tastatur auf Deutsch..."
+
+# 1. Setzt das Layout für die grafische Oberfläche (Hyprland/Rofi)
 sudo localectl set-x11-keymap de
+
+# 2. Setzt das Layout für die Hardware-Konsole (TTY)
 sudo localectl set-keymap de-latin1
 
+# 3. Schreibt die Einstellung direkt in die Hardware-Konfig von Arch/CachyOS
+# Falls die Datei existiert, wird KEYMAP=us durch de-latin1 ersetzt
+sudo sed -i 's/KEYMAP=us/KEYMAP=de-latin1/g' /etc/vconsole.conf 2>/dev/null
+
+# 4. Erstellt die X11 Konfigurationsdatei als Rückfallebene
 sudo mkdir -p /etc/X11/xorg.conf.d/
 cat <<EOF | sudo tee /etc/X11/xorg.conf.d/00-keyboard.conf
 Section "InputClass"
