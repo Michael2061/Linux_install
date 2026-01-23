@@ -55,21 +55,24 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
 fi
 sudo chsh -s $(which zsh) $USER
 
-# FIX: Umgebungsvariablen in .zshrc schreiben
-echo "🔧 Optimiere .zshrc..."
-# Alte Einträge löschen, um Dopplungen zu vermeiden
-sed -i '/XDG_CURRENT_DESKTOP/d' "$HOME/.zshrc" 2>/dev/null
-sed -i '/XDG_SESSION_TYPE/d' "$HOME/.zshrc" 2>/dev/null
-sed -i '/XDG_SESSION_DESKTOP/d' "$HOME/.zshrc" 2>/dev/null
-sed -i '/kb_layout/d' "$HOME/.zshrc" 2>/dev/null
+# FIX: Umgebungsvariablen NUR hinzufügen, wenn sie noch nicht drin sind
+echo "🔍 Prüfe .zshrc Einträge..."
+ZSH_CONF="$HOME/.zshrc"
 
-{
-    echo 'export XDG_CURRENT_DESKTOP=Hyprland'
-    echo 'export XDG_SESSION_TYPE=wayland'
-    echo 'export XDG_SESSION_DESKTOP=Hyprland'
-    echo 'hyprctl keyword input:kb_layout de 2>/dev/null'
-    echo 'fastfetch'
-} >> "$HOME/.zshrc"
+# Funktion zum sauberen Hinzufügen (verhindert Dopplungen)
+add_to_zsh() {
+    # Wir prüfen, ob der exakte Text bereits in der Datei steht
+    if ! grep -Fxq "$1" "$ZSH_CONF" 2>/dev/null; then
+        echo "$1" >> "$ZSH_CONF"
+    fi
+}
+
+# WICHTIG: > /dev/null 2>&1 unterdrückt das "ok" von hyprctl
+add_to_zsh 'export XDG_CURRENT_DESKTOP=Hyprland'
+add_to_zsh 'export XDG_SESSION_TYPE=wayland'
+add_to_zsh 'export XDG_SESSION_DESKTOP=Hyprland'
+add_to_zsh 'hyprctl keyword input:kb_layout de > /dev/null 2>&1'
+add_to_zsh 'fastfetch'
 
 # 5. Dotfiles & Verzeichnisse
 echo "📥 Klone Konfigurationsdateien..."
