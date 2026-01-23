@@ -4,7 +4,7 @@
 DOTFILES_REPO="https://github.com/Michael2061/hyperland.git"
 TEMP_DIR="$HOME/temp_dots"
 
-echo "🚀 Starte das optimierte CachyOS Setup (SwayOSD Fix)..."
+echo "🚀 Starte das finale CachyOS Setup..."
 
 # 1. Hardware-Erkennung
 IS_LAPTOP=false
@@ -28,7 +28,7 @@ PACKAGES=(
     vlc obs-studio obsidian code foot alacritty
     libreoffice-still libreoffice-still-de thunderbird
     dunst polkit-kde-agent
-    swayosd # Jetzt offiziell über pacman
+    swayosd
 )
 
 if [ "$IS_LAPTOP" = true ]; then
@@ -43,13 +43,11 @@ AUR_HELPER=$(command -v paru || command -v yay)
 if [ -z "$AUR_HELPER" ]; then
     echo "❌ Kein AUR-Helper gefunden!"
 else
-    # swayosd-git entfernt, da in pacman enthalten
     $AUR_HELPER -S --noconfirm pyprland sddm-sugar-candy-git
 fi
 
 # 4. Nutzergruppen & Shell
-echo "👤 Konfiguriere Nutzergruppen..."
-# Wichtig für SwayOSD Zugriff auf Keyboard/Backlight
+echo "👤 Konfiguriere Nutzergruppen & Shell..."
 sudo usermod -aG input $USER
 sudo usermod -aG video $USER
 
@@ -61,7 +59,7 @@ sudo chsh -s $(which zsh) $USER
 # 5. Dotfiles & Verzeichnisse
 echo "📥 Klone Konfigurationsdateien..."
 rm -rf $TEMP_DIR
-# Tipp: Nutze SSH (git@github.com:...), falls du deinen Key schon hinterlegt hast
+# Falls du deinen SSH Key hinterlegt hast, ändere die URL zu: git@github.com:Michael2061/hyperland.git
 git clone $DOTFILES_REPO $TEMP_DIR
 mkdir -p ~/.config/{hypr,kitty,mangohud,rofi,waybar} ~/scripts ~/Pictures/Wallpapers
 
@@ -95,7 +93,7 @@ cp -r $TEMP_DIR/mangohud/* ~/.config/mangohud/
 chmod +x ~/scripts/*.sh
 rm -rf $TEMP_DIR
 
-# 9. Services aktivieren (Korrektur: sudo systemctl für System-Unit)
+# 9. Services aktivieren
 echo "🔧 Aktiviere Services..."
 sudo systemctl daemon-reload
 sudo systemctl enable --now swayosd-libinput-backend.service
@@ -113,12 +111,28 @@ echo -e "$GTK_CONF" > ~/.config/gtk-3.0/settings.ini
 echo -e "$GTK_CONF" > ~/.config/gtk-4.0/settings.ini
 fc-cache -fv
 
-# 11. Rust Installation
+# 11. Rust Installation (KORRIGIERT)
 echo "🦀 Installiere Rust..."
 if ! command -v rustup &> /dev/null; then
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    export PATH="$HOME/.cargo/bin:$PATH"
 fi
-$HOME/.cargo/bin/rustup default stable
 
-echo "✨ SETUP ERFOLGREICH! Bitte jetzt 'reboot' ausführen, damit Gruppen-Änderungen greifen."
+# Lädt die Umgebungsvariablen für die aktuelle Sitzung
+[ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
+
+# Sicherstellen, dass der absolute Pfad genutzt wird
+if [ -f "$HOME/.cargo/bin/rustup" ]; then
+    "$HOME/.cargo/bin/rustup" default stable
+else
+    echo "⚠️ Rust konnte nicht konfiguriert werden - bitte manuell prüfen."
+fi
+
+# Pfad-Fix für SwayOSD Style (pywal Integration)
+echo "🎨 Passe SwayOSD Pfade an..."
+if [ -f ~/.config/swayosd/style.css ]; then
+    # Ersetzt den Platzhalter __HOME__ durch den echten Pfad des aktuellen Users
+    sed -i "s|__HOME__|$HOME|g" ~/.config/swayosd/style.css
+    swayosd-client --reload-style
+fi
+
+echo "✨ SETUP ERFOLGREICH! Bitte jetzt 'reboot' ausführen."
