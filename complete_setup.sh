@@ -47,28 +47,26 @@ else
 fi
 
 # 4. Nutzergruppen & Shell
-echo "👤 Konfiguriere Nutzergruppen & Shell..."
-sudo usermod -aG input $USER
-sudo usermod -aG video $USER
+echo "👤 Konfiguriere Nutzergruppen und Shell..."
+sudo usermod -aG video,audio,input $USER
 
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
-    echo "Installer Oh-My-Zsh..."
     sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)" "" --unattended
 fi
 sudo chsh -s $(which zsh) $USER
 
-# --- NEU: Zsh-Umgebung fixen (Muss NACH dem Oh-My-Zsh Install kommen) ---
-echo "🔧 Optimiere .zshrc für Wayland & Tastatur..."
-# Wir löschen alte Einträge, um Dopplungen zu vermeiden
+# FIX: Umgebungsvariablen in .zshrc schreiben
+echo "🔧 Optimiere .zshrc..."
+# Alte Einträge löschen, um Dopplungen zu vermeiden
 sed -i '/XDG_CURRENT_DESKTOP/d' "$HOME/.zshrc" 2>/dev/null
+sed -i '/XDG_SESSION_TYPE/d' "$HOME/.zshrc" 2>/dev/null
+sed -i '/XDG_SESSION_DESKTOP/d' "$HOME/.zshrc" 2>/dev/null
 sed -i '/kb_layout/d' "$HOME/.zshrc" 2>/dev/null
 
 {
     echo 'export XDG_CURRENT_DESKTOP=Hyprland'
     echo 'export XDG_SESSION_TYPE=wayland'
     echo 'export XDG_SESSION_DESKTOP=Hyprland'
-    echo 'export LANG=de_DE.UTF-8'
-    echo '# Erzwingt deutsches Layout in jedem Terminal'
     echo 'hyprctl keyword input:kb_layout de 2>/dev/null'
     echo 'fastfetch'
 } >> "$HOME/.zshrc"
@@ -108,25 +106,26 @@ cp -r $TEMP_DIR/kitty/* ~/.config/kitty/
 cp -r $TEMP_DIR/rofi/* ~/.config/rofi/
 cp -r $TEMP_DIR/mangohud/* ~/.config/mangohud/
 
-# --- NEU: Fixes direkt nach dem Kopieren ---
-echo "📏 Fixe Waybar & Kitty Konfiguration..."
+# --- FIXES FÜR WAYBAR & KITTY ---
+echo "📏 Korrigiere Waybar Höhe und Kitty Config..."
 
-# Waybar Fix: Ändert die Höhe von 34 auf 52 (behebt deinen Log-Fehler)
+# Sucht in der Datei 'config' nach der Höhe 34 und macht 52 daraus
 if [ -f "$HOME/.config/waybar/config" ]; then
-    sed -i 's/"height": 34/"height": 52/g' "$HOME/.config/waybar/config"
+    # Wir stellen sicher, dass sowohl "height": 34 als auch height: 34 gefunden wird
+    sed -i 's/height": 34/height": 52/g' "$HOME/.config/waybar/config"
+    sed -i 's/height: 34/height: 52/g' "$HOME/.config/waybar/config"
 fi
 
-# Kitty Fix: Entfernt den ungültigen Befehl
+# Entfernt den fehlerhaften Befehl aus der Kitty Config (exec_once ist kein Kitty-Befehl)
 if [ -f "$HOME/.config/kitty/kitty.conf" ]; then
     sed -i '/exec_once fastfetch/d' "$HOME/.config/kitty/kitty.conf"
 fi
+# ------------------------------
 
-# Berechtigungen setzen
 chmod +x ~/scripts/*.sh
 rm -rf $TEMP_DIR
 
 echo "⚙️  Initialisiere Design..."
-# Jetzt startet das Design mit der bereits korrigierten Waybar-Höhe
 bash ~/scripts/wallpaper_engine.sh
 
 # 9. Services aktivieren
