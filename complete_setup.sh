@@ -4,16 +4,16 @@
 DOTFILES_REPO="https://github.com/Michael2061/hyperland.git"
 TEMP_DIR="$HOME/temp_dots"
 
-echo "🚀 Starte das INTELLIGENTE All-in-One Setup..."
+echo "🚀 Starte das vollständige CachyOS Setup..."
 
 # 1. Hardware-Erkennung
 IS_LAPTOP=false
 if [ -d /sys/class/power_supply/BAT0 ]; then
     IS_LAPTOP=true
-    echo "💻 Laptop erkannt. Zusätzliche Treiber (Touchpad, Akku, Bluetooth) werden installiert..."
+    echo "💻 Laptop erkannt. Zusätzliche Treiber werden installiert..."
 fi
 
-# 2. System Update & Pakete
+# 2. System Update & Pakete (JETZT MIT SWAYOSD ÜBER PACMAN)
 echo "📦 Installiere System-Pakete..."
 sudo pacman -Syu --noconfirm
 
@@ -28,6 +28,7 @@ PACKAGES=(
     vlc obs-studio obsidian code foot alacritty
     libreoffice-still libreoffice-still-de thunderbird
     dunst polkit-kde-agent
+    swayosd  # Korrektur: Direkt über pacman für bessere Service-Erkennung
 )
 
 if [ "$IS_LAPTOP" = true ]; then
@@ -42,7 +43,8 @@ AUR_HELPER=$(command -v paru || command -v yay)
 if [ -z "$AUR_HELPER" ]; then
     echo "❌ Kein AUR-Helper gefunden!"
 else
-    $AUR_HELPER -S --noconfirm pyprland sddm-sugar-candy-git swayosd-git
+    # swayosd-git entfernt, da jetzt oben in pacman enthalten
+    $AUR_HELPER -S --noconfirm pyprland sddm-sugar-candy-git
 fi
 
 # 4. Shell-Konfiguration
@@ -93,12 +95,13 @@ cp -r $TEMP_DIR/mangohud/* ~/.config/mangohud/
 chmod +x ~/scripts/*.sh
 rm -rf $TEMP_DIR
 
-# 9. Services aktivieren (KORRIGIERT: swayosd statt swayos)
+# 9. Services aktivieren
 echo "🔧 Aktiviere Services..."
+systemctl --user daemon-reload
 systemctl --user enable --now swayosd-libinput-backend.service
 
-# 10. GTK-Einstellungen
-echo "🎨 Setze System-Schrift..."
+# 10. GTK-Einstellungen (HIER IST PUNKT 10)
+echo "🎨 Setze System-Schrift & Themes..."
 GTK_CONF="[Settings]
 gtk-font-name=JetBrainsMono Nerd Font 11
 gtk-theme-name=CachyOS-Dark
@@ -116,8 +119,6 @@ if ! command -v rustup &> /dev/null; then
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     export PATH="$HOME/.cargo/bin:$PATH"
 fi
-
 $HOME/.cargo/bin/rustup default stable
 
-echo "✨ SETUP ERFOLGREICH! System ist für $([ "$IS_LAPTOP" = true ] && echo "Laptop" || echo "Desktop") angepasst."
-echo "Bitte führe jetzt einen 'reboot' aus."
+echo "✨ SETUP ERFOLGREICH! Bitte jetzt 'reboot' ausführen."
