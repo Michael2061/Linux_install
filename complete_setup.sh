@@ -68,6 +68,7 @@ fi
 # 6. Konfigurationen kopieren
 echo "💾 Kopiere Konfigurationsdateien..."
 cp -r "$TEMP_DIR"/* "$HOME/.config/"
+# Falls dein Repo-Ordner 'wlogout' heißt, wird er jetzt nach ~/.config/wlogout/ kopiert
 rm -rf "$HOME/.config/.git"
 
 # 7. Dynamische Pfad-Fixes (Hyprlock, Waybar & Rofi)
@@ -98,14 +99,16 @@ if [ -f "$ROFI_THEME" ]; then
     echo "🌹 Rofi Rosie-Theme angepasst."
 fi
 
-# --- WLOGOUT FIX ---
-WLOGOUT_CONF="$HOME/.config/wlogout/layout"
-if [ -f "$WLOGOUT_CONF" ]; then
-    # Ersetzt swaylock (falls vorhanden) durch hyprlock
-    sed -i 's/swaylock/hyprlock/g' "$WLOGOUT_CONF"
-    # Sicherstellen, dass der Logout-Befehl für Hyprland passt
-    sed -i 's/loginctl terminate-user $USER/hyprctl dispatch exit 0/g' "$WLOGOUT_CONF"
-    echo "🚪 wlogout auf hyprlock und Hyprland-Exit angepasst."
+# --- WLOGOUT FIX (Damit Logout funktioniert) ---
+WLOG_LAYOUT="$HOME/.config/wlogout/layout"
+if [ -f "$WLOG_LAYOUT" ]; then
+    # Fix: Nutze hyprlock zum Sperren (statt swaylock)
+    sed -i 's/swaylock/hyprlock/g' "$WLOG_LAYOUT"
+    # Fix: Stabiler Logout-Befehl (loginctl terminate-session self)
+    # Das löst das Blackscreen-Problem, da es die Sitzung komplett beendet
+    sed -i 's/hyprctl dispatch exit 0/loginctl terminate-session self/g' "$WLOG_LAYOUT"
+    sed -i 's/loginctl terminate-user $USER/loginctl terminate-session self/g' "$WLOG_LAYOUT"
+    echo "✅ wlogout Befehle auf Stabilität geprüft."
 fi
 
 # 8. SDDM Setup
