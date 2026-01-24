@@ -102,15 +102,22 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
 fi
 
 # --- 10. INITIALER WALLPAPER ENGINE RUN ---
+# --- 10. INITIALER WALLPAPER ENGINE RUN ---
 echo "🖼️ Initialisiere Wallpaper und Cache via Engine..."
-WP_SCRIPT="$HOME/.config/hypr/wallpaper_engine.sh"
+
+# HIER DEN PFAD ANPASSEN:
+WP_SCRIPT="$HOME/.config/scripts/wallpaper_engine.sh"
+
 if [ -f "$WP_SCRIPT" ]; then
     chmod +x "$WP_SCRIPT"
     # Einmal ausführen, um Cache und Desktop zu setzen
     bash "$WP_SCRIPT"
     echo "✅ Wallpaper Engine erfolgreich gestartet."
 else
-    echo "⚠️ wallpaper_engine.sh nicht gefunden, überspringe..."
+    # Fehlersuche: Wo ist die Datei wirklich?
+    echo "⚠️ wallpaper_engine.sh nicht unter $WP_SCRIPT gefunden!"
+    echo "🔍 Suche Datei im .config Ordner..."
+    find "$HOME/.config" -name "wallpaper_engine.sh"
 fi
 
 # 11. Aufräumen
