@@ -48,7 +48,7 @@ mkdir -p "$HOME/.cache"
 mkdir -p "$HOME/Pictures/Wallpapers"
 mkdir -p "$HOME/.local/bin"
 
-# 5. Bilder & Cache (WICHTIG: Vor den Config-Fixes!)
+# 5. Bilder & Cache
 echo "🌹 Bereite Rosie-Avatar und Wallpaper-Cache vor..."
 ROSIE_URL="https://preview.redd.it/i-deliver-rosie-art-now-back-to-lurking-v0-uv9qfhfimm7d1.jpeg?width=2500&format=pjpg&auto=webp&s=9dcaa0b42ecc849444ec08fee79ed083a0e9c672"
 
@@ -60,7 +60,6 @@ if [ -f ~/rosie_temp.jpg ]; then
     rm ~/rosie_temp.jpg
 fi
 
-# Initiales Wallpaper aus Repo kopieren
 if [ -f "$TEMP_DIR/wallpapers/rosie.jpg" ]; then
     cp "$TEMP_DIR/wallpapers/rosie.jpg" "$HOME/Pictures/Wallpapers/rosie.jpg"
     cp "$TEMP_DIR/wallpapers/rosie.jpg" "$HOME/.cache/current_wallpaper.png"
@@ -71,21 +70,35 @@ echo "💾 Kopiere Konfigurationsdateien..."
 cp -r "$TEMP_DIR"/* "$HOME/.config/"
 rm -rf "$HOME/.config/.git"
 
-# >>> HIER KOMMT DER BLOCK REIN <<<
-# 7. Dynamische Pfad-Fixes (Hyprlock & Rofi)
+# 7. Dynamische Pfad-Fixes (Hyprlock, Waybar & Rofi)
 echo "🔧 Passe Pfade an deinen User ($USER) an..."
 
+# Hyprlock Fix
 HYPR_CONF="$HOME/.config/hypr/hyprlock.conf"
 if [ -f "$HYPR_CONF" ]; then
-    # Wir biegen den Pfad hart auf den Cache-Ordner um, egal was vorher da stand
     sed -i "s|path = .*rosie_avatar.png|path = /home/$USER/.cache/rosie_avatar.png|g" "$HYPR_CONF"
     sed -i "s|path = .*current_wallpaper.png|path = /home/$USER/.cache/current_wallpaper.png|g" "$HYPR_CONF"
-    # Falls noch __USER__ Platzhalter drin sind
     sed -i "s|__USER__|$USER|g" "$HYPR_CONF"
-    echo "🔧 Hyprlock-Pfade auf Cache (/home/$USER/.cache/) gesetzt."
+    echo "✅ Hyprlock-Pfade gesetzt."
 fi
 
-# 8. SDDM Setup (Mit Avatar)
+# >>> WAYBAR USER-PFAD FIX (HIER EINGEBAUT) <<<
+WAYBAR_STYLE="$HOME/.config/waybar/style.css"
+if [ -f "$WAYBAR_STYLE" ]; then
+    sed -i "s|__USER__|$USER|g" "$WAYBAR_STYLE"
+    echo "🎨 Waybar-Farben auf User $USER konfiguriert."
+fi
+
+# Rofi Rosie-Avatar Fix
+ROFI_THEME="$HOME/.config/rofi/rosie.rasi"
+if [ -f "$ROFI_THEME" ]; then
+    sed -i "s|__USER__|$USER|g" "$ROFI_THEME"
+    # Falls das Bild im Theme direkt verlinkt ist:
+    sed -i "s|path:.*|path: \"/home/$USER/.cache/rosie_avatar.png\";|g" "$ROFI_THEME"
+    echo "🌹 Rofi Rosie-Theme angepasst."
+fi
+
+# 8. SDDM Setup
 echo "🖥️ Richte SDDM ein..."
 sudo systemctl enable sddm
 sudo mkdir -p /usr/share/sddm/faces
@@ -99,22 +112,16 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 fi
 
-# --- 10. INITIALER WALLPAPER ENGINE RUN ---
+# 10. INITIALER WALLPAPER ENGINE RUN
 echo "🖼️ Initialisiere Wallpaper und Cache via Engine..."
-
-# HIER DEN PFAD ANPASSEN:
 WP_SCRIPT="$HOME/.config/scripts/wallpaper_engine.sh"
 
 if [ -f "$WP_SCRIPT" ]; then
     chmod +x "$WP_SCRIPT"
-    # Einmal ausführen, um Cache und Desktop zu setzen
     bash "$WP_SCRIPT"
     echo "✅ Wallpaper Engine erfolgreich gestartet."
 else
-    # Fehlersuche: Wo ist die Datei wirklich?
-    echo "⚠️ wallpaper_engine.sh nicht unter $WP_SCRIPT gefunden!"
-    echo "🔍 Suche Datei im .config Ordner..."
-    find "$HOME/.config" -name "wallpaper_engine.sh"
+    echo "⚠️ wallpaper_engine.sh nicht gefunden unter $WP_SCRIPT!"
 fi
 
 # 11. Aufräumen
