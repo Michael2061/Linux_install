@@ -29,6 +29,7 @@ PACKAGES=(
     libreoffice-still libreoffice-still-de thunderbird
     dunst polkit-kde-agent gvfs gvfs-mtp udiskie
     swayosd swww playerctl wlogout grim slurp wl-clipboard
+    imagemagick
 )
 
 if [ "$IS_LAPTOP" = true ]; then
@@ -281,12 +282,43 @@ else
     echo "⚠️ hyprland.conf nicht gefunden. Bitte manuell prüfen!"
 fi
 
-# 14. Profilbild-Vorbereitung
-echo "--- 👤 Bereite Profilbild-Ordner vor ---"
-mkdir -p "$HOME/Pictures"
-# Falls kein Profilbild existiert, lade ein Platzhalter-Icon (optional)
-if [ ! -f "$HOME/Pictures/profile_picture.png" ]; then
-    wget -O "$HOME/Pictures/profile_picture.png" "https://cdn-icons-png.flaticon.com/512/3135/3135715.png" -q
+# 14. Profilbild-Vorbereitung (Rosie Edition)
+echo "👤 Lade Rosie Profilbild herunter und bereite es vor..."
+
+# Sicherstellen, dass imagemagick installiert ist für den Zuschnitt
+if ! command -v magick &> /dev/null; then
+    sudo pacman -S imagemagick --noconfirm
 fi
+
+# Der Rosie-Download & Zuschnitt
+ROSIE_URL="https://preview.redd.it/i-deliver-rosie-art-now-back-to-lurking-v0-uv9qfhfimm7d1.jpeg?width=2500&format=pjpg&auto=webp&s=9dcaa0b42ecc849444ec08fee79ed083a0e9c672"
+
+wget -O ~/rosie_large.jpg "$ROSIE_URL" && \
+magick convert ~/rosie_large.jpg -gravity Center -crop 1:1 +repage -resize 512x512 "$HOME/.face.icon" && \
+rm ~/rosie_large.jpg
+
+if [ -f "$HOME/.face.icon" ]; then
+    # Erstellt das Verzeichnis für SDDM Faces, falls es fehlt
+    sudo mkdir -p /usr/share/sddm/faces
+    # Kopiert das Bild als systemweiten Avatar für deinen User
+    sudo cp "$HOME/.face.icon" "/usr/share/sddm/faces/$USER.face.icon"
+
+    # SDDM mitteilen, wo die Avatare liegen
+    sudo mkdir -p /etc/sddm.conf.d
+    echo -e "[Theme]\nFacesDir=/usr/share/sddm/faces" | sudo tee /etc/sddm.conf.d/avatar.conf
+    echo "✅ Rosie wurde erfolgreich als Profilbild eingerichtet!"
+else
+    echo "⚠️ Fehler beim Erstellen des Profilbildes."
+fi
+
+# --- 15. AUTOMATISCHE SUDO-RECHTE FÜR SDDM-SYNC ---
+echo "🔓 Konfiguriere Sudo-Rechte für Wallpaper-Sync..."
+SUDOERS_FILE="/etc/sudoers.d/sddm-sync"
+# Diese Regel erlaubt das Kopieren des Bildes und das Schreiben der Farben ohne Passwort
+SUDOERS_RULE="$USER ALL=(ALL) NOPASSWD: /usr/bin/cp * /usr/share/sddm/themes/sugar-candy/Backgrounds/current_bg.jpg, /usr/bin/tee /usr/share/sddm/themes/sugar-candy/theme.conf.user"
+
+echo "$SUDOERS_RULE" | sudo tee "$SUDOERS_FILE" > /dev/null
+sudo chmod 440 "$SUDOERS_FILE"
+echo "✅ Sudo-Rechte erfolgreich konfiguriert."
 
 echo "✨ SETUP ERFOLGREICH! Bitte jetzt 'reboot' ausführen."
