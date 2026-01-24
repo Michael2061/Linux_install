@@ -71,20 +71,18 @@ echo "💾 Kopiere Konfigurationsdateien..."
 cp -r "$TEMP_DIR"/* "$HOME/.config/"
 rm -rf "$HOME/.config/.git"
 
+# >>> HIER KOMMT DER BLOCK REIN <<<
 # 7. Dynamische Pfad-Fixes (Hyprlock & Rofi)
 echo "🔧 Passe Pfade an deinen User ($USER) an..."
+
 HYPR_CONF="$HOME/.config/hypr/hyprlock.conf"
 if [ -f "$HYPR_CONF" ]; then
-    sed -i "s|__USER__|$USER|g" "$HYPR_CONF"
-    sed -i "s|\$USER|$USER|g" "$HYPR_CONF"
+    # Wir biegen den Pfad hart auf den Cache-Ordner um, egal was vorher da stand
     sed -i "s|path = .*rosie_avatar.png|path = /home/$USER/.cache/rosie_avatar.png|g" "$HYPR_CONF"
     sed -i "s|path = .*current_wallpaper.png|path = /home/$USER/.cache/current_wallpaper.png|g" "$HYPR_CONF"
-fi
-
-ROFI_CONF="$HOME/.config/rofi/rosie.rasi"
-if [ -f "$ROFI_CONF" ]; then
-    sed -i "s|__USER__|$USER|g" "$ROFI_CONF"
-    sed -i "s|/home/[^/]*/\.config/rofi/rosie_avatar\.png|/home/$USER/.cache/rosie_avatar.png|g" "$ROFI_CONF"
+    # Falls noch __USER__ Platzhalter drin sind
+    sed -i "s|__USER__|$USER|g" "$HYPR_CONF"
+    echo "🔧 Hyprlock-Pfade auf Cache (/home/$USER/.cache/) gesetzt."
 fi
 
 # 8. SDDM Setup (Mit Avatar)
@@ -101,7 +99,6 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 fi
 
-# --- 10. INITIALER WALLPAPER ENGINE RUN ---
 # --- 10. INITIALER WALLPAPER ENGINE RUN ---
 echo "🖼️ Initialisiere Wallpaper und Cache via Engine..."
 
