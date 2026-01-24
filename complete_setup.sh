@@ -27,7 +27,7 @@ PACKAGES=(
     zsh tmux thunar thunar-archive-plugin thunar-volman tumbler
     vlc obs-studio obsidian code foot alacritty
     libreoffice-still libreoffice-still-de thunderbird
-    dunst polkit-kde-agent
+    dunst polkit-kde-agent gvfs gvfs-mtp udiskie
     swayosd swww playerctl wlogout grim slurp wl-clipboard
 )
 
