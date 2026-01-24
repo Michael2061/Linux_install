@@ -173,6 +173,7 @@ sudo cp ~/Pictures/Wallpapers/rosie.jpg /usr/share/sddm/themes/sugar-candy/Backg
 chmod +x ~/scripts/*.sh
 
 echo "⚙️ Initialisiere Design..."
+cd $HOME
 bash ~/scripts/wallpaper_engine.sh
 
 # 9. Services aktivieren
