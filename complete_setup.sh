@@ -108,6 +108,11 @@ echo "🎨 Konfiguriere Login-Manager & Design..."
 W3="neon-city-futuristic-city-cyber-city-cyberpunk-cityscape-5k-3840x2160-8801.jpg"
 wget -O ~/Pictures/Wallpapers/$W3 "https://4kwallpapers.com/images/wallpapers/neon-city-futuristic-city-cyber-city-cyberpunk-cityscape-5k-3840x2160-8801.jpg"
 
+
+echo "--- 🖼️ Lade Cyberpunk-Wallpaper herunter ---"
+mkdir -p "$HOME/Pictures/Wallpapers"
+wget -O "$HOME/Pictures/Wallpapers/cyberpunk_car.jpg" "https://images.peakpx.com/wallpaper/342/261/3440x1440/cyberpunk-car-neon-artwork-wallpaper-preview.jpg" -q
+
 sudo systemctl enable sddm
 sudo mkdir -p /etc/sddm.conf.d && echo -e "[Theme]\nCurrent=sugar-candy" | sudo tee /etc/sddm.conf.d/theme.conf
 sudo mkdir -p /usr/share/sddm/themes/sugar-candy/Backgrounds
@@ -237,5 +242,9 @@ if [ -f "$HYPR_CONF" ]; then
 else
     echo "⚠️ hyprland.conf nicht gefunden. Bitte manuell prüfen!"
 fi
+
+# 14. Profilbild-Vorbereitung
+echo "--- 👤 Bereite Profilbild-Ordner vor ---"
+mkdir -p "$HOME/Pictures"
 
 echo "✨ SETUP ERFOLGREICH! Bitte jetzt 'reboot' ausführen."
