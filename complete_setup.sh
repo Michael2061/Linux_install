@@ -317,6 +317,26 @@ echo "🔓 Setze Sudo-Berechtigungen für den Rosie-Style..."
 SUDOERS_FILE="/etc/sudoers.d/sddm-sync"
 SUDOERS_RULE="$USER ALL=(ALL) NOPASSWD: /usr/bin/cp * /usr/share/sddm/themes/sugar-candy/Backgrounds/current_bg.jpg, /usr/bin/tee /usr/share/sddm/themes/sugar-candy/theme.conf.user"
 
+
+# --- Rofi Rosie-Theme Integration ---
+echo "🎨 Installiere Rosie-Rofi-Theme aus dem Repo..."
+
+# Zielordner erstellen
+mkdir -p "$HOME/.config/rofi"
+
+# Prüfen, ob die Datei im Repo existiert und kopieren
+if [ -f "$DOTFILES_REPO/rofi/rosie.rasi" ]; then
+    cp "$DOTFILES_REPO/rofi/rosie.rasi" "$HOME/.config/rofi/rosie.rasi"
+
+    # Optional: Falls du in der .rasi Datei einen Pfad zum Avatar hast,
+    # fixen wir ihn hier wieder dynamisch für deinen User:
+    sed -i "s|/home/[^/]*/|/home/$USER/|g" "$HOME/.config/rofi/rosie.rasi"
+
+    echo "✅ Rofi-Theme erfolgreich nach ~/.config/rofi/ kopiert."
+else
+    echo "❌ Fehler: $DOTFILES_REPO/rofi/rosie.rasi nicht gefunden!"
+fi
+
 echo "$SUDOERS_RULE" | sudo tee "$SUDOERS_FILE" > /dev/null
 sudo chmod 440 "$SUDOERS_FILE"
 
