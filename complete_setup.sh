@@ -28,7 +28,7 @@ PACKAGES=(
     vlc obs-studio obsidian code foot alacritty
     libreoffice-still libreoffice-still-de thunderbird
     dunst polkit-kde-agent
-    swayosd swww playerctl wlogout
+    swayosd swww playerctl wlogout grim slurp wl-clipboard
 )
 
 if [ "$IS_LAPTOP" = true ]; then
@@ -43,7 +43,7 @@ AUR_HELPER=$(command -v paru || command -v yay)
 if [ -z "$AUR_HELPER" ]; then
     echo "❌ Kein AUR-Helper gefunden!"
 else
-    $AUR_HELPER -S --noconfirm pyprland sddm-sugar-candy-git
+    $AUR_HELPER -S --noconfirm pyprland sddm-sugar-candy-git grimblast-git
 fi
 
 # 4. Nutzergruppen & Shell
