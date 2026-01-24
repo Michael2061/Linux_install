@@ -103,10 +103,26 @@ rm -rf $TEMP_DIR
 git clone $DOTFILES_REPO $TEMP_DIR
 mkdir -p ~/.config/{hypr,kitty,mangohud,rofi,waybar} ~/scripts ~/Pictures/Wallpapers
 
-# 6. Wallpaper & SDDM
-echo "🎨 Konfiguriere Login-Manager & Design..."
-W3="neon-city-futuristic-city-cyber-city-cyberpunk-cityscape-5k-3840x2160-8801.jpg"
-wget -O ~/Pictures/Wallpapers/$W3 "https://4kwallpapers.com/images/wallpapers/neon-city-futuristic-city-cyber-city-cyberpunk-cityscape-5k-3840x2160-8801.jpg"
+# --- 6. Wallpaper & SDDM Vorbereitung ---
+echo "--- 🛠️ Bereite SDDM vor ---"
+sudo systemctl enable sddm
+
+# Theme aktivieren
+sudo mkdir -p /etc/sddm.conf.d
+echo -e "[Theme]\nCurrent=sugar-candy" | sudo tee /etc/sddm.conf.d/theme.conf
+
+# --- NEU: Deine theme.conf.user aus Git kopieren ---
+echo "🎨 Konfiguriere SDDM Theme..."
+# Sicherstellen, dass der Zielordner existiert
+sudo mkdir -p /usr/share/sddm/themes/sugar-candy/Backgrounds
+
+# Kopiere die Datei aus deinem heruntergeladenen Repo
+if [ -f "$TEMP_DIR/sddm/theme.conf.user" ]; then
+    sudo cp "$TEMP_DIR/sddm/theme.conf.user" /usr/share/sddm/themes/sugar-candy/theme.conf.user
+    echo "✅ theme.conf.user wurde installiert."
+else
+    echo "⚠️ theme.conf.user im Repo nicht gefunden unter $TEMP_DIR/sddm/"
+fi
 
 
 sudo systemctl enable sddm
