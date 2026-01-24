@@ -28,7 +28,7 @@ PACKAGES=(
     vlc obs-studio obsidian code foot alacritty
     libreoffice-still libreoffice-still-de thunderbird
     dunst polkit-kde-agent
-    swayosd swww playerctl
+    swayosd swww playerctl wlogout
 )
 
 if [ "$IS_LAPTOP" = true ]; then
@@ -113,6 +113,7 @@ sudo systemctl enable sddm
 sudo mkdir -p /etc/sddm.conf.d && echo -e "[Theme]\nCurrent=sugar-candy" | sudo tee /etc/sddm.conf.d/theme.conf
 sudo mkdir -p /usr/share/sddm/themes/sugar-candy/Backgrounds
 sudo cp ~/Pictures/Wallpapers/$W3 /usr/share/sddm/themes/sugar-candy/Backgrounds/default_background.jpg
+sudo cp ~/Pictures/Wallpapers/rosie.jpg /usr/share/sddm/themes/sugar-candy/Backgrounds/default_background.jpg
 
 # 7. Produktiv-Tools
 echo "🖥️ Optimiere Produktiv-Tools..."
@@ -157,6 +158,15 @@ fi
 if [ -f "$HOME/.config/kitty/kitty.conf" ]; then
     sed -i '/exec_once fastfetch/d' "$HOME/.config/kitty/kitty.conf"
 fi
+
+# --- NEU: Fix für Hyprlock Pfade ---
+if [ -f "$HOME/.config/hypr/hyprlock.conf" ]; then
+    echo "🔒 Optimiere Hyprlock Konfiguration..."
+    sed -i "s|__USER__|$USER|g" ~/.config/hypr/hyprlock.conf
+    # Falls du in der hyprlock.conf $HOME oder __HOME__ verwendest:
+    sed -i "s|__HOME__|$HOME|g" ~/.config/hypr/hyprlock.conf
+fi
+# ---------------------------------------------------------
 # ---------------------------------------------------------
 
 # Skripte ausführbar machen
@@ -257,5 +267,9 @@ fi
 # 14. Profilbild-Vorbereitung
 echo "--- 👤 Bereite Profilbild-Ordner vor ---"
 mkdir -p "$HOME/Pictures"
+# Falls kein Profilbild existiert, lade ein Platzhalter-Icon (optional)
+if [ ! -f "$HOME/Pictures/profile_picture.png" ]; then
+    wget -O "$HOME/Pictures/profile_picture.png" "https://cdn-icons-png.flaticon.com/512/3135/3135715.png" -q
+fi
 
 echo "✨ SETUP ERFOLGREICH! Bitte jetzt 'reboot' ausführen."
