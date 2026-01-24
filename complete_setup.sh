@@ -109,10 +109,6 @@ W3="neon-city-futuristic-city-cyber-city-cyberpunk-cityscape-5k-3840x2160-8801.j
 wget -O ~/Pictures/Wallpapers/$W3 "https://4kwallpapers.com/images/wallpapers/neon-city-futuristic-city-cyber-city-cyberpunk-cityscape-5k-3840x2160-8801.jpg"
 
 
-echo "--- 🖼️ Lade Cyberpunk-Wallpaper herunter ---"
-mkdir -p "$HOME/Pictures/Wallpapers"
-wget -O "$HOME/Pictures/Wallpapers/cyberpunk_car.jpg" "https://images.peakpx.com/wallpaper/342/261/3440x1440/cyberpunk-car-neon-artwork-wallpaper-preview.jpg" -q
-
 sudo systemctl enable sddm
 sudo mkdir -p /etc/sddm.conf.d && echo -e "[Theme]\nCurrent=sugar-candy" | sudo tee /etc/sddm.conf.d/theme.conf
 sudo mkdir -p /usr/share/sddm/themes/sugar-candy/Backgrounds
@@ -128,7 +124,21 @@ echo '--enable-features=UseOzonePlatform
 --ozone-platform=wayland' > ~/.config/code-flags.conf
 
 # 8. Dateien kopieren
-echo "📂 Kopiere Konfigurationsdateien..."
+echo "📂 Kopiere Konfigurationsdateien und Wallpaper..."
+
+# --- NEU: Rosie-Wallpaper aus dem geklonten Repo kopieren ---
+# Wir erstellen den Zielordner sicherheitshalber vorher
+mkdir -p ~/Pictures/Wallpapers
+
+if [ -f "$TEMP_DIR/Wallpaper/rosie.jpg" ]; then
+    cp "$TEMP_DIR/Wallpaper/rosie.jpg" ~/Pictures/Wallpapers/rosie.jpg
+    echo "✅ Rosie-Wallpaper wurde aus dem Repo kopiert."
+else
+    echo "⚠️ rosie.jpg wurde im Pfad $TEMP_DIR/Wallpaper/ nicht gefunden!"
+fi
+# ---------------------------------------------------------
+
+# Hier sind die wichtigen alten Befehle, die bleiben müssen:
 cp -r $TEMP_DIR/hypr/* ~/.config/hypr/
 cp -r $TEMP_DIR/waybar/* ~/.config/waybar/
 cp -r $TEMP_DIR/scripts/* ~/scripts/
@@ -136,26 +146,27 @@ cp -r $TEMP_DIR/kitty/* ~/.config/kitty/
 cp -r $TEMP_DIR/rofi/* ~/.config/rofi/
 cp -r $TEMP_DIR/mangohud/* ~/.config/mangohud/
 
-# --- FIXES FÜR WAYBAR & KITTY ---
+# --- FIXES FÜR WAYBAR & KITTY (Diese müssen bleiben!) ---
 echo "📏 Korrigiere Waybar Höhe und Kitty Config..."
 
-# Sucht in der Datei 'config' nach der Höhe 34 und macht 52 daraus
 if [ -f "$HOME/.config/waybar/config" ]; then
-    # Wir stellen sicher, dass sowohl "height": 34 als auch height: 34 gefunden wird
     sed -i 's/height": 34/height": 52/g' "$HOME/.config/waybar/config"
     sed -i 's/height: 34/height: 52/g' "$HOME/.config/waybar/config"
 fi
 
-# Entfernt den fehlerhaften Befehl aus der Kitty Config (exec_once ist kein Kitty-Befehl)
 if [ -f "$HOME/.config/kitty/kitty.conf" ]; then
     sed -i '/exec_once fastfetch/d' "$HOME/.config/kitty/kitty.conf"
 fi
-# ------------------------------
+# ---------------------------------------------------------
 
+# Skripte ausführbar machen
 chmod +x ~/scripts/*.sh
+
+# Temp-Ordner aufräumen
 rm -rf $TEMP_DIR
 
-echo "⚙️  Initialisiere Design..."
+echo "⚙️ Initialisiere Design..."
+# Startet die Engine, die nun rosie.jpg als Grundlage nimmt
 bash ~/scripts/wallpaper_engine.sh
 
 # 9. Services aktivieren
