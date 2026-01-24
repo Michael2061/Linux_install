@@ -151,8 +151,9 @@ cp -r $TEMP_DIR/mangohud/* ~/.config/mangohud/
 echo "📏 Korrigiere Waybar Höhe und Kitty Config..."
 
 if [ -f "$HOME/.config/waybar/config" ]; then
-    sed -i 's/height": 34/height": 52/g' "$HOME/.config/waybar/config"
-    sed -i 's/height: 34/height: 52/g' "$HOME/.config/waybar/config"
+    # Wir machen die Bar ein Stück höher, damit Icons nicht abgeschnitten werden
+    sed -i 's/height": 34/height": 55/g' "$HOME/.config/waybar/config"
+    sed -i 's/height: 34/height: 55/g' "$HOME/.config/waybar/config"
 fi
 
 if [ -f "$HOME/.config/kitty/kitty.conf" ]; then
