@@ -162,9 +162,8 @@ fi
 # --- NEU: Fix für Hyprlock Pfade ---
 if [ -f "$HOME/.config/hypr/hyprlock.conf" ]; then
     echo "🔒 Optimiere Hyprlock Konfiguration..."
-    # Nutze $HOME Variable direkt und stelle sicher, dass Pfade absolut sind
-    sed -i "s|__USER__|$USER|g" "$HOME/.config/hypr/hyprlock.conf"
-    sed -i "s|__HOME__|$HOME|g" "$HOME/.config/hypr/hyprlock.conf"
+    sed -i "s|__USER__|$USER|g" ~/.config/hypr/hyprlock.conf
+    sed -i "s|__HOME__|$HOME|g" ~/.config/hypr/hyprlock.conf
 fi
 
 # SDDM Hintergrund setzen (Erst hier, da das Bild nun sicher da ist!)
@@ -217,12 +216,10 @@ fi
 
 # Pfad-Fix für SwayOSD Style (pywal Integration)
 echo "🎨 Passe SwayOSD Pfade an..."
-if [ -f "$HOME/.config/swayosd/style.css" ]; then
-    # Wir stellen sicher, dass __HOME__ durch $HOME ersetzt wird
-    sed -i "s|__HOME__|$HOME|g" "$HOME/.config/swayosd/style.css"
-    swayosd-client --reload-style 2>/dev/null
-else
-    echo "ℹ️ SwayOSD Style nicht gefunden, überspringe Fix."
+if [ -f ~/.config/swayosd/style.css ]; then
+    # Ersetzt den Platzhalter __HOME__ durch den echten Pfad des aktuellen Users
+    sed -i "s|__HOME__|$HOME|g" ~/.config/swayosd/style.css
+    swayosd-client --reload-style
 fi
 
 # 12. Finaler System-Tastatur-Fix (Hardware & System)
