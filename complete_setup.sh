@@ -69,13 +69,10 @@ fi
 # 6. Konfigurationen kopieren
 echo "💾 Kopiere Konfigurationsdateien..."
 cp -r "$TEMP_DIR"/* "$HOME/.config/"
-# Aufräumen: Falls das Repo-Verzeichnis selbst mitkopiert wurde
 rm -rf "$HOME/.config/.git"
 
 # 7. Dynamische Pfad-Fixes (Hyprlock & Rofi)
 echo "🔧 Passe Pfade an deinen User ($USER) an..."
-
-# Hyprlock Fix
 HYPR_CONF="$HOME/.config/hypr/hyprlock.conf"
 if [ -f "$HYPR_CONF" ]; then
     sed -i "s|__USER__|$USER|g" "$HYPR_CONF"
@@ -84,11 +81,9 @@ if [ -f "$HYPR_CONF" ]; then
     sed -i "s|path = .*current_wallpaper.png|path = /home/$USER/.cache/current_wallpaper.png|g" "$HYPR_CONF"
 fi
 
-# Rofi Fix
 ROFI_CONF="$HOME/.config/rofi/rosie.rasi"
 if [ -f "$ROFI_CONF" ]; then
     sed -i "s|__USER__|$USER|g" "$ROFI_CONF"
-    # Falls ein Bildpfad in Rofi ist, auch auf Cache biegen
     sed -i "s|/home/[^/]*/\.config/rofi/rosie_avatar\.png|/home/$USER/.cache/rosie_avatar.png|g" "$ROFI_CONF"
 fi
 
@@ -97,16 +92,30 @@ echo "🖥️ Richte SDDM ein..."
 sudo systemctl enable sddm
 sudo mkdir -p /usr/share/sddm/faces
 sudo cp "$HOME/.cache/rosie_avatar.png" "/usr/share/sddm/faces/$USER.face.icon"
-
 sudo mkdir -p /etc/sddm.conf.d
 echo -e "[Theme]\nCurrent=sugar-candy\nFacesDir=/usr/share/sddm/faces" | sudo tee /etc/sddm.conf.d/theme.conf
 echo -e "[Theme]\nFacesDir=/usr/share/sddm/faces" | sudo tee /etc/sddm.conf.d/avatar.conf
 
-# 9. Shell & Terminal (ZSH & Oh-My-Zsh)
+# 9. Shell & Terminal (ZSH)
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 fi
 
-# 10. Aufräumen
+# --- 10. INITIALER WALLPAPER ENGINE RUN ---
+echo "🖼️ Initialisiere Wallpaper und Cache via Engine..."
+WP_SCRIPT="$HOME/.config/hypr/wallpaper_engine.sh"
+if [ -f "$WP_SCRIPT" ]; then
+    chmod +x "$WP_SCRIPT"
+    # Einmal ausführen, um Cache und Desktop zu setzen
+    bash "$WP_SCRIPT"
+    echo "✅ Wallpaper Engine erfolgreich gestartet."
+else
+    echo "⚠️ wallpaper_engine.sh nicht gefunden, überspringe..."
+fi
+
+# 11. Aufräumen
+echo "🧹 Räume Temp-Dateien auf..."
 rm -rf "$TEMP_DIR"
-echo "✅ Setup abgeschlossen! Bitte einmal neu starten."
+
+echo "✅ SETUP ABGESCHLOSSEN! Rosie ist bereit."
+echo "🔄 Bitte starte dein System neu."
