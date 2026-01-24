@@ -285,11 +285,6 @@ fi
 # 14. Profilbild-Vorbereitung (Rosie Edition)
 echo "👤 Lade Rosie Profilbild herunter und bereite es vor..."
 
-# Sicherstellen, dass imagemagick installiert ist für den Zuschnitt
-if ! command -v magick &> /dev/null; then
-    sudo pacman -S imagemagick --noconfirm
-fi
-
 # Der Rosie-Download & Zuschnitt
 ROSIE_URL="https://preview.redd.it/i-deliver-rosie-art-now-back-to-lurking-v0-uv9qfhfimm7d1.jpeg?width=2500&format=pjpg&auto=webp&s=9dcaa0b42ecc849444ec08fee79ed083a0e9c672"
 
@@ -303,6 +298,13 @@ if [ -f "$HOME/.face.icon" ]; then
     # Kopiert das Bild als systemweiten Avatar für deinen User
     sudo cp "$HOME/.face.icon" "/usr/share/sddm/faces/$USER.face.icon"
 
+    # --- HIER EINBAUEN ---
+    # Kopiere das Bild auch in den Config-Ordner für Hyprlock
+    echo "🔒 Kopiere Avatar für Hyprlock..."
+    mkdir -p "$HOME/.config/hypr/"
+    cp "$HOME/.face.icon" "$HOME/.config/hypr/rosie_avatar.png"
+    # ---------------------
+
     # SDDM mitteilen, wo die Avatare liegen
     sudo mkdir -p /etc/sddm.conf.d
     echo -e "[Theme]\nFacesDir=/usr/share/sddm/faces" | sudo tee /etc/sddm.conf.d/avatar.conf
@@ -311,14 +313,12 @@ else
     echo "⚠️ Fehler beim Erstellen des Profilbildes."
 fi
 
-# --- 15. AUTOMATISCHE SUDO-RECHTE FÜR SDDM-SYNC ---
-echo "🔓 Konfiguriere Sudo-Rechte für Wallpaper-Sync..."
+# --- 15. AUTOMATISCHE SUDO-RECHTE ---
+echo "🔓 Setze Sudo-Berechtigungen für den Rosie-Style..."
 SUDOERS_FILE="/etc/sudoers.d/sddm-sync"
-# Diese Regel erlaubt das Kopieren des Bildes und das Schreiben der Farben ohne Passwort
 SUDOERS_RULE="$USER ALL=(ALL) NOPASSWD: /usr/bin/cp * /usr/share/sddm/themes/sugar-candy/Backgrounds/current_bg.jpg, /usr/bin/tee /usr/share/sddm/themes/sugar-candy/theme.conf.user"
 
 echo "$SUDOERS_RULE" | sudo tee "$SUDOERS_FILE" > /dev/null
 sudo chmod 440 "$SUDOERS_FILE"
-echo "✅ Sudo-Rechte erfolgreich konfiguriert."
 
 echo "✨ SETUP ERFOLGREICH! Bitte jetzt 'reboot' ausführen."
