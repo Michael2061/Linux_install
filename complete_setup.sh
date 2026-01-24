@@ -293,7 +293,7 @@ sudo mkdir -p /usr/share/sddm/faces
 ROSIE_URL="https://preview.redd.it/i-deliver-rosie-art-now-back-to-lurking-v0-uv9qfhfimm7d1.jpeg?width=2500&format=pjpg&auto=webp&s=9dcaa0b42ecc849444ec08fee79ed083a0e9c672"
 
 curl -L "$ROSIE_URL" > ~/rosie_temp.jpg
-magick ~/rosie_temp.jpg -gravity Center -crop 1:1 +repage -resize 512x512 "$HOME/.face.icon"
+magick ~/rosie_temp.jpg -gravity Center -crop 1:1 +repage -resize 256x256 -strip -quality 85 "$HOME/.config/hypr/rosie_avatar.png"
 rm ~/rosie_temp.jpg
 
 if [ -f "$HOME/.face.icon" ]; then
