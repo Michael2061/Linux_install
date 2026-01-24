@@ -285,32 +285,31 @@ fi
 # 14. Profilbild-Vorbereitung (Rosie Edition)
 echo "👤 Lade Rosie Profilbild herunter und bereite es vor..."
 
-# Der Rosie-Download & Zuschnitt
+# Ordner sicherstellen
+mkdir -p "$HOME/.config/hypr"
+sudo mkdir -p /usr/share/sddm/faces
+
+# Download & Zuschnitt mit dem Fix, der bei dir funktioniert hat
 ROSIE_URL="https://preview.redd.it/i-deliver-rosie-art-now-back-to-lurking-v0-uv9qfhfimm7d1.jpeg?width=2500&format=pjpg&auto=webp&s=9dcaa0b42ecc849444ec08fee79ed083a0e9c672"
 
-wget -O ~/rosie_large.jpg "$ROSIE_URL" && \
-magick convert ~/rosie_large.jpg -gravity Center -crop 1:1 +repage -resize 512x512 "$HOME/.face.icon" && \
-rm ~/rosie_large.jpg
+curl -L "$ROSIE_URL" > ~/rosie_temp.jpg
+magick ~/rosie_temp.jpg -gravity Center -crop 1:1 +repage -resize 512x512 "$HOME/.face.icon"
+rm ~/rosie_temp.jpg
 
 if [ -f "$HOME/.face.icon" ]; then
-    # Erstellt das Verzeichnis für SDDM Faces, falls es fehlt
-    sudo mkdir -p /usr/share/sddm/faces
-    # Kopiert das Bild als systemweiten Avatar für deinen User
+    # 1. Für Hyprlock bereitstellen
+    cp "$HOME/.face.icon" "$HOME/.config/hypr/rosie_avatar.png"
+
+    # 2. Für SDDM bereitstellen
     sudo cp "$HOME/.face.icon" "/usr/share/sddm/faces/$USER.face.icon"
 
-    # --- HIER EINBAUEN ---
-    # Kopiere das Bild auch in den Config-Ordner für Hyprlock
-    echo "🔒 Kopiere Avatar für Hyprlock..."
-    mkdir -p "$HOME/.config/hypr/"
-    cp "$HOME/.face.icon" "$HOME/.config/hypr/rosie_avatar.png"
-    # ---------------------
-
-    # SDDM mitteilen, wo die Avatare liegen
+    # SDDM Konfiguration
     sudo mkdir -p /etc/sddm.conf.d
     echo -e "[Theme]\nFacesDir=/usr/share/sddm/faces" | sudo tee /etc/sddm.conf.d/avatar.conf
-    echo "✅ Rosie wurde erfolgreich als Profilbild eingerichtet!"
+
+    echo "✅ Rosie wurde erfolgreich überall (SDDM & Hyprlock) eingerichtet!"
 else
-    echo "⚠️ Fehler beim Erstellen des Profilbildes."
+    echo "⚠️ Fehler: Bild konnte nicht erstellt werden."
 fi
 
 # --- 15. AUTOMATISCHE SUDO-RECHTE ---
