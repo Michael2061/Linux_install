@@ -219,31 +219,23 @@ Section "InputClass"
 EndSection
 EOF
 
-# 13. Systemd-User-Service für Waybar & Wallpaper einrichten
-echo "--- 🛠️ Richte Systemd-User-Service für Waybar & Wallpaper ein ---"
+# 13. Autostart in Hyprland eintragen (statt Systemd-Service)
+echo "--- 🛠️ Konfiguriere Autostart in Hyprland ---"
 
-mkdir -p "$HOME/.config/systemd/user/"
+# Deaktiviere den alten Service, falls er noch aktiv ist
+systemctl --user disable wallpaper-engine.service 2>/dev/null
+rm -f "$HOME/.config/systemd/user/wallpaper-engine.service"
 
-cat <<'EOF' > "$HOME/.config/systemd/user/wallpaper-engine.service"
-[Unit]
-Description=Start Wallpaper Engine and Waybar
-After=graphical-session.target
-
-[Service]
-Type=simple
-# FIX: Pfad auf dein tatsächliches scripts-Verzeichnis angepasst
-ExecStart=/bin/bash %h/scripts/wallpaper_engine.sh
-Restart=always
-RestartSec=3
-PassEnvironment=WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE
-
-[Install]
-WantedBy=graphical-session.target
-EOF
-
-systemctl --user daemon-reload
-systemctl --user enable wallpaper-engine.service
-
-echo "✅ Systemd-Service wurde installiert und aktiviert."
+# Stelle sicher, dass das Skript in der hyprland.conf eingetragen ist
+HYPR_CONF="$HOME/.config/hypr/hyprland.conf"
+if [ -f "$HYPR_CONF" ]; then
+    # Entferne alte Einträge, falls vorhanden, um Dopplungen zu vermeiden
+    sed -i '/wallpaper_engine.sh/d' "$HYPR_CONF"
+    # Füge den neuen, korrekten Pfad am Ende der Autostart-Sektion ein
+    echo "exec-once = ~/scripts/wallpaper_engine.sh &" >> "$HYPR_CONF"
+    echo "✅ Autostart in hyprland.conf eingetragen."
+else
+    echo "⚠️ hyprland.conf nicht gefunden. Bitte manuell prüfen!"
+fi
 
 echo "✨ SETUP ERFOLGREICH! Bitte jetzt 'reboot' ausführen."
