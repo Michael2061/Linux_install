@@ -98,6 +98,16 @@ if [ -f "$ROFI_THEME" ]; then
     echo "🌹 Rofi Rosie-Theme angepasst."
 fi
 
+# --- WLOGOUT FIX ---
+WLOGOUT_CONF="$HOME/.config/wlogout/layout"
+if [ -f "$WLOGOUT_CONF" ]; then
+    # Ersetzt swaylock (falls vorhanden) durch hyprlock
+    sed -i 's/swaylock/hyprlock/g' "$WLOGOUT_CONF"
+    # Sicherstellen, dass der Logout-Befehl für Hyprland passt
+    sed -i 's/loginctl terminate-user $USER/hyprctl dispatch exit 0/g' "$WLOGOUT_CONF"
+    echo "🚪 wlogout auf hyprlock und Hyprland-Exit angepasst."
+fi
+
 # 8. SDDM Setup
 echo "🖥️ Richte SDDM ein..."
 sudo systemctl enable sddm
