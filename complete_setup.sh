@@ -28,7 +28,7 @@ PACKAGES=(
     vlc obs-studio obsidian code foot alacritty
     libreoffice-still libreoffice-still-de thunderbird
     dunst polkit-kde-agent
-    swayosd swww
+    swayosd swww playerctl
 )
 
 if [ "$IS_LAPTOP" = true ]; then
@@ -222,12 +222,8 @@ EOF
 # 13. Systemd-User-Service für Waybar & Wallpaper einrichten
 echo "--- 🛠️ Richte Systemd-User-Service für Waybar & Wallpaper ein ---"
 
-# Verzeichnis erstellen (falls nicht vorhanden)
 mkdir -p "$HOME/.config/systemd/user/"
 
-# Die Service-Datei schreiben
-# Wir nutzen <<'EOF' (mit Anführungszeichen), damit $HOME im File nicht sofort ersetzt wird,
-# sondern erst wenn der Service ausgeführt wird.
 cat <<'EOF' > "$HOME/.config/systemd/user/wallpaper-engine.service"
 [Unit]
 Description=Start Wallpaper Engine and Waybar
@@ -235,9 +231,9 @@ After=graphical-session.target
 
 [Service]
 Type=simple
+# FIX: Pfad auf dein tatsächliches scripts-Verzeichnis angepasst
 ExecStart=/bin/bash %h/scripts/wallpaper_engine.sh
 Restart=always
-# Wichtig: Wir warten 3 Sekunden vor dem Neustart, falls es kracht
 RestartSec=3
 PassEnvironment=WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE
 
@@ -245,10 +241,7 @@ PassEnvironment=WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE
 WantedBy=graphical-session.target
 EOF
 
-# Systemd mitteilen, dass es eine neue Datei gibt
 systemctl --user daemon-reload
-
-# Den Service so einstellen, dass er beim Booten automatisch startet
 systemctl --user enable wallpaper-engine.service
 
 echo "✅ Systemd-Service wurde installiert und aktiviert."
