@@ -112,8 +112,7 @@ wget -O ~/Pictures/Wallpapers/$W3 "https://4kwallpapers.com/images/wallpapers/ne
 sudo systemctl enable sddm
 sudo mkdir -p /etc/sddm.conf.d && echo -e "[Theme]\nCurrent=sugar-candy" | sudo tee /etc/sddm.conf.d/theme.conf
 sudo mkdir -p /usr/share/sddm/themes/sugar-candy/Backgrounds
-sudo cp ~/Pictures/Wallpapers/$W3 /usr/share/sddm/themes/sugar-candy/Backgrounds/default_background.jpg
-sudo cp ~/Pictures/Wallpapers/rosie.jpg /usr/share/sddm/themes/sugar-candy/Backgrounds/default_background.jpg
+
 
 # 7. Produktiv-Tools
 echo "🖥️ Optimiere Produktiv-Tools..."
@@ -127,17 +126,17 @@ echo '--enable-features=UseOzonePlatform
 # 8. Dateien kopieren
 echo "📂 Kopiere Konfigurationsdateien und Wallpaper..."
 
-# --- NEU: Rosie-Wallpaper aus dem geklonten Repo kopieren ---
-# Wir erstellen den Zielordner sicherheitshalber vorher
+# Zielordner erstellen
 mkdir -p ~/Pictures/Wallpapers
 
+# Rosie-Wallpaper aus dem geklonten Repo kopieren
+# Hinweis: Laut deiner Struktur liegt es in $TEMP_DIR/Wallpaper/rosie.jpg
 if [ -f "$TEMP_DIR/Wallpaper/rosie.jpg" ]; then
     cp "$TEMP_DIR/Wallpaper/rosie.jpg" ~/Pictures/Wallpapers/rosie.jpg
     echo "✅ Rosie-Wallpaper wurde aus dem Repo kopiert."
 else
     echo "⚠️ rosie.jpg wurde im Pfad $TEMP_DIR/Wallpaper/ nicht gefunden!"
 fi
-# ---------------------------------------------------------
 
 # Hier sind die wichtigen alten Befehle, die bleiben müssen:
 cp -r $TEMP_DIR/hypr/* ~/.config/hypr/
@@ -164,26 +163,26 @@ fi
 if [ -f "$HOME/.config/hypr/hyprlock.conf" ]; then
     echo "🔒 Optimiere Hyprlock Konfiguration..."
     sed -i "s|__USER__|$USER|g" ~/.config/hypr/hyprlock.conf
-    # Falls du in der hyprlock.conf $HOME oder __HOME__ verwendest:
     sed -i "s|__HOME__|$HOME|g" ~/.config/hypr/hyprlock.conf
 fi
-# ---------------------------------------------------------
-# ---------------------------------------------------------
+
+# SDDM Hintergrund setzen (Erst hier, da das Bild nun sicher da ist!)
+sudo cp ~/Pictures/Wallpapers/rosie.jpg /usr/share/sddm/themes/sugar-candy/Backgrounds/default_background.jpg
 
 # Skripte ausführbar machen
 chmod +x ~/scripts/*.sh
 
-# Temp-Ordner aufräumen
-rm -rf $TEMP_DIR
-
 echo "⚙️ Initialisiere Design..."
-# Startet die Engine, die nun rosie.jpg als Grundlage nimmt
 bash ~/scripts/wallpaper_engine.sh
 
 # 9. Services aktivieren
 echo "🔧 Aktiviere Services..."
 sudo systemctl daemon-reload
 sudo systemctl enable --now swayosd-libinput-backend.service
+
+# --- JETZT ERST AUFRÄUMEN ---
+echo "🧹 Aufräumen..."
+rm -rf "$TEMP_DIR"
 
 # 10. GTK-Einstellungen
 echo "🎨 Setze System-Schrift..."
