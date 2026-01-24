@@ -162,8 +162,9 @@ fi
 # --- NEU: Fix für Hyprlock Pfade ---
 if [ -f "$HOME/.config/hypr/hyprlock.conf" ]; then
     echo "🔒 Optimiere Hyprlock Konfiguration..."
-    sed -i "s|__USER__|$USER|g" ~/.config/hypr/hyprlock.conf
-    sed -i "s|__HOME__|$HOME|g" ~/.config/hypr/hyprlock.conf
+    # Nutze $HOME Variable direkt und stelle sicher, dass Pfade absolut sind
+    sed -i "s|__USER__|$USER|g" "$HOME/.config/hypr/hyprlock.conf"
+    sed -i "s|__HOME__|$HOME|g" "$HOME/.config/hypr/hyprlock.conf"
 fi
 
 # SDDM Hintergrund setzen (Erst hier, da das Bild nun sicher da ist!)
