@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# 🚀 MICHAEL'S ULTIMATE HYPRLAND SETUP (ROSIE EDITION)
+# 🚀 MICHAEL'S ULTIMATE HYPRLAND SETUP (ROSIE EDITION) - UPDATED
 # ==============================================================================
 
 # Variablen
@@ -36,89 +36,66 @@ PACKAGES=(
 
 sudo pacman -S --needed --noconfirm "${PACKAGES[@]}"
 
-# 3. Dotfiles klonen
+# 3. Dotfiles klonen & verteilen
 echo "📥 Klone Dotfiles..."
 rm -rf "$TEMP_DIR"
 git clone "$DOTFILES_REPO" "$TEMP_DIR"
 
-# 4. Verzeichnisse vorbereiten
-echo "📂 Erstelle Verzeichnisstruktur..."
+echo "📂 Verreibe Konfigurationen..."
 mkdir -p "$HOME/.config"
-mkdir -p "$HOME/.cache"
-mkdir -p "$HOME/Pictures/Wallpapers"
-mkdir -p "$HOME/.local/bin"
+cp -r "$TEMP_DIR/.config/"* "$HOME/.config/"
+cp -r "$TEMP_DIR/Pictures" "$HOME/"
+chmod +x "$HOME/.config/scripts/"*
 
-# 5. Bilder & Cache
-echo "🌹 Bereite Rosie-Avatar und Wallpaper-Cache vor..."
-ROSIE_URL="https://preview.redd.it/i-deliver-rosie-art-now-back-to-lurking-v0-uv9qfhfimm7d1.jpeg?width=2500&format=pjpg&auto=webp&s=9dcaa0b42ecc849444ec08fee79ed083a0e9c672"
+# 4. Wallpaper-Pfad Fix (Erzwinge rosie.png)
+sed -i 's/rosie.jpg/rosie.png/g' "$HOME/.config/scripts/wallpaper_engine.sh"
 
-curl -L "$ROSIE_URL" > ~/rosie_temp.jpg
-if [ -f ~/rosie_temp.jpg ]; then
-    magick ~/rosie_temp.jpg -gravity Center -crop 1:1 +repage -resize 256x256 -strip -quality 85 "$HOME/.cache/rosie_avatar.png"
-    cp "$HOME/.cache/rosie_avatar.png" "$HOME/.face.icon"
-    echo "✅ Rosie-Avatar im Cache erstellt."
-    rm ~/rosie_temp.jpg
-fi
-
-if [ -f "$TEMP_DIR/wallpapers/rosie.png" ]; then
-    cp "$TEMP_DIR/wallpapers/rosie.png" "$HOME/Pictures/Wallpapers/rosie.png"
-    cp "$TEMP_DIR/wallpapers/rosie.png" "$HOME/.cache/current_wallpaper.png"
-fi
-
-# 6. Konfigurationen kopieren
-echo "💾 Kopiere Konfigurationsdateien..."
-cp -r "$TEMP_DIR"/* "$HOME/.config/"
-# Falls dein Repo-Ordner 'wlogout' heißt, wird er jetzt nach ~/.config/wlogout/ kopiert
-rm -rf "$HOME/.config/.git"
-
-# 7. Dynamische Pfad-Fixes (Hyprlock, Waybar & Rofi)
-echo "🔧 Passe Pfade an deinen User ($USER) an..."
-
-# Hyprlock Fix
-HYPR_CONF="$HOME/.config/hypr/hyprlock.conf"
-if [ -f "$HYPR_CONF" ]; then
-    sed -i "s|path = .*rosie_avatar.png|path = /home/$USER/.cache/rosie_avatar.png|g" "$HYPR_CONF"
-    sed -i "s|path = .*current_wallpaper.png|path = /home/$USER/.cache/current_wallpaper.png|g" "$HYPR_CONF"
-    sed -i "s|__USER__|$USER|g" "$HYPR_CONF"
-    echo "✅ Hyprlock-Pfade gesetzt."
-fi
-
-# >>> WAYBAR USER-PFAD FIX (HIER EINGEBAUT) <<<
+# 5. Waybar Styles fixen (User-Pfad)
 WAYBAR_STYLE="$HOME/.config/waybar/style.css"
-if [ -f "$WAYBAR_STYLE" ]; then
-    sed -i "s|__USER__|$USER|g" "$WAYBAR_STYLE"
-    echo "🎨 Waybar-Farben auf User $USER konfiguriert."
-fi
+sed -i "s|__USER__|$USER|g" "$WAYBAR_STYLE"
 
-# Rofi Rosie-Avatar Fix
-ROFI_THEME="$HOME/.config/rofi/rosie.rasi"
-if [ -f "$ROFI_THEME" ]; then
-    sed -i "s|__USER__|$USER|g" "$ROFI_THEME"
-    # Falls das Bild im Theme direkt verlinkt ist:
-    sed -i "s|path:.*|path: \"/home/$USER/.cache/rosie_avatar.png\";|g" "$ROFI_THEME"
-    echo "🌹 Rofi Rosie-Theme angepasst."
-fi
+# 6. Hyprlock Fix (User-Pfad)
+sed -i "s|__USER__|$USER|g" "$HOME/.config/hypr/hyprlock.conf"
 
-# --- WLOGOUT FIX (Damit Logout funktioniert) ---
+# 7. Wlogout Stabilitäts-Fix
 WLOG_LAYOUT="$HOME/.config/wlogout/layout"
 if [ -f "$WLOG_LAYOUT" ]; then
-    # Fix: Nutze hyprlock zum Sperren (statt swaylock)
-    sed -i 's/swaylock/hyprlock/g' "$WLOG_LAYOUT"
-    # Fix: Stabiler Logout-Befehl (loginctl terminate-session self)
-    # Das löst das Blackscreen-Problem, da es die Sitzung komplett beendet
     sed -i 's/hyprctl dispatch exit 0/loginctl terminate-session self/g' "$WLOG_LAYOUT"
-    sed -i 's/loginctl terminate-user $USER/loginctl terminate-session self/g' "$WLOG_LAYOUT"
     echo "✅ wlogout Befehle auf Stabilität geprüft."
 fi
 
-# 8. SDDM Setup
-echo "🖥️ Richte SDDM ein..."
+# 8. SDDM Setup (Optimiert für dynamische Rosie-Wallpaper ohne sudo-Zwang in der Engine)
+echo "🖥️ Richte SDDM für dynamische Rosie-Wallpaper ein..."
 sudo systemctl enable sddm
+
+# Profilbild-Ordner vorbereiten
 sudo mkdir -p /usr/share/sddm/faces
-sudo cp "$HOME/.cache/rosie_avatar.png" "/usr/share/sddm/faces/$USER.face.icon"
+# Falls ein Avatar existiert, kopieren (sonst macht das die wallpaper_engine später)
+if [ -f "$HOME/.cache/rosie_avatar.png" ]; then
+    sudo cp "$HOME/.cache/rosie_avatar.png" "/usr/share/sddm/faces/$USER.face.icon"
+fi
+
+# Berechtigungen setzen, damit SDDM auf das Bild im User-Cache zugreifen kann
+chmod 755 $HOME
+mkdir -p $HOME/.cache
+chmod 777 $HOME/.cache 
+
+# SDDM Theme-Konfiguration (sugar-candy) direkt auf den Cache-Pfad umleiten
+SDDM_CONF="/usr/share/sddm/themes/sugar-candy/theme.conf.user"
+sudo bash -c "cat > $SDDM_CONF" <<EOF
+[General]
+background=$HOME/.cache/current_wallpaper.png
+mainColor=#e91e63
+accentColor=#e91e63
+fontColor=#ffffff
+selectionColor=#e91e63
+showRoundUserIcon=true
+FacesDir=/usr/share/sddm/faces
+EOF
+
+# Avatar-Verzeichnis global für SDDM bekannt machen
 sudo mkdir -p /etc/sddm.conf.d
 echo -e "[Theme]\nCurrent=sugar-candy\nFacesDir=/usr/share/sddm/faces" | sudo tee /etc/sddm.conf.d/theme.conf
-echo -e "[Theme]\nFacesDir=/usr/share/sddm/faces" | sudo tee /etc/sddm.conf.d/avatar.conf
 
 # 9. Shell & Terminal (ZSH)
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
@@ -126,20 +103,9 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
 fi
 
 # 10. INITIALER WALLPAPER ENGINE RUN
-echo "🖼️ Initialisiere Wallpaper und Cache via Engine..."
-WP_SCRIPT="$HOME/.config/scripts/wallpaper_engine.sh"
-
-if [ -f "$WP_SCRIPT" ]; then
-    chmod +x "$WP_SCRIPT"
-    bash "$WP_SCRIPT"
-    echo "✅ Wallpaper Engine erfolgreich gestartet."
-else
-    echo "⚠️ wallpaper_engine.sh nicht gefunden unter $WP_SCRIPT!"
+echo "🖼️ Starte Wallpaper Engine für initiale Farben..."
+if [ -f "$HOME/.config/scripts/wallpaper_engine.sh" ]; then
+    bash "$HOME/.config/scripts/wallpaper_engine.sh"
 fi
 
-# 11. Aufräumen
-echo "🧹 Räume Temp-Dateien auf..."
-rm -rf "$TEMP_DIR"
-
-echo "✅ SETUP ABGESCHLOSSEN! Rosie ist bereit."
-echo "🔄 Bitte starte dein System neu."
+echo "🎉 Setup abgeschlossen! Bitte starte dein System neu."
