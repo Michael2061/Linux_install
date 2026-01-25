@@ -60,9 +60,9 @@ if [ -f ~/rosie_temp.jpg ]; then
     rm ~/rosie_temp.jpg
 fi
 
-if [ -f "$TEMP_DIR/wallpapers/rosie.jpg" ]; then
-    cp "$TEMP_DIR/wallpapers/rosie.jpg" "$HOME/Pictures/Wallpapers/rosie.jpg"
-    cp "$TEMP_DIR/wallpapers/rosie.jpg" "$HOME/.cache/current_wallpaper.png"
+if [ -f "$TEMP_DIR/wallpapers/rosie.png" ]; then
+    cp "$TEMP_DIR/wallpapers/rosie.png" "$HOME/Pictures/Wallpapers/rosie.png"
+    cp "$TEMP_DIR/wallpapers/rosie.png" "$HOME/.cache/current_wallpaper.png"
 fi
 
 # 6. Konfigurationen kopieren
