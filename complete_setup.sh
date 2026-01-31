@@ -38,7 +38,7 @@ PACKAGES=(
     vlc obs-studio obsidian code foot alacritty
     libreoffice-still libreoffice-still-de thunderbird
     dunst polkit-kde-agent gvfs gvfs-mtp udiskie
-    swayosd swww playerctl wlogout grim slurp wl-clipboard
+    swayosd swww playerctl wlogout grim slurp wl-clipboard ncspot
 )
 
 # Nvidia-spezifische Treiber (Nur bei Nvidia-Hardware)
