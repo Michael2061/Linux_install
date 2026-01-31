@@ -22,16 +22,35 @@ echo "📦 Installiere System-Pakete..."
 sudo pacman -Syu --noconfirm
 
 PACKAGES=(
-    hyprland hyprpaper hyprlock hypridle waybar kitty rofi-wayland
+    # --- System & Desktop Environment ---
+    hyprland hyprpaper hyprlock hypridle waybar
     sddm qt5-graphicaleffects qt5-quickcontrols2 qt5-svg
+    dunst polkit-kde-agent
+    
+    # --- Audio & Sound ---
     pipewire pipewire-pulse pipewire-alsa wireplumber pavucontrol
-    python-pywal wget fastfetch btop playerctl cliphist
+    
+    # --- Terminals & Shell ---
+    kitty foot alacritty zsh tmux
+    
+    # --- Datei-Management ---
+    thunar thunar-archive-plugin thunar-volman tumbler
+    gvfs gvfs-mtp udiskie
+    
+    # --- Apps & Office ---
+    vlc obs-studio obsidian code
+    libreoffice-still libreoffice-still-de thunderbird
+    
+    # --- Gaming ---
+    steam lib32-nvidia-utils gamemode mangohud gamescope
+    
+    # --- Tools & Utilities ---
+    rofi-wayland python-pywal wget curl git fastfetch btop 
+    playerctl cliphist imagemagick wlogout
+    grim slurp wl-clipboard swayosd swww
+    
+    # --- Fonts ---
     ttf-jetbrains-mono-nerd ttf-font-awesome
-    zsh tmux thunar thunar-archive-plugin thunar-volman tumbler
-    vlc obs-studio obsidian code foot
-    dunst polkit-kde-agent gvfs gvfs-mtp udiskie
-    swayosd swww grim slurp wl-clipboard
-    imagemagick curl git
 )
 
 sudo pacman -S --needed --noconfirm "${PACKAGES[@]}"
@@ -46,7 +65,7 @@ mkdir -p "$HOME/.config"
 mkdir -p "$HOME/Pictures/Wallpapers"
 
 # Gesamten .config Ordner kopieren
-cp -r "$TEMP_DIR/.config/"* "$HOME/.config/"
+cp -r "$TEMP_DIR/"* "$HOME/.config/"
 
 # FIX: Kopiere rosie.png aus deinem GitHub 'Wallpaper' Ordner
 if [ -d "$TEMP_DIR/Wallpaper" ]; then
