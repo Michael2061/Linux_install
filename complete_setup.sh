@@ -109,9 +109,15 @@ if [ -f "$HOME/Pictures/Wallpapers/rosie.png" ]; then
     sudo cp "$HOME/Pictures/Wallpapers/rosie.png" "/usr/share/sddm/faces/$USER.face.icon"
 fi
 
-# SDDM Theme-Konfiguration (sugar-candy) auf den Cache umleiten
-SDDM_CONF="/usr/share/sddm/themes/sugar-candy/theme.conf.user"
-sudo bash -c "cat > $SDDM_CONF" <<EOF
+# --- DEIN NEUER BLOCK HIER ---
+# Kopiere die theme.conf.user aus dem Repo in das SDDM Verzeichnis
+if [ -f "$TEMP_DIR/sddm/theme.conf.user" ]; then
+    sudo cp "$TEMP_DIR/sddm/theme.conf.user" "/usr/share/sddm/themes/sugar-candy/theme.conf.user"
+    echo "✅ SDDM theme.conf.user aus Repo installiert."
+else
+    # Fallback: Falls die Datei im Repo fehlt, erstelle eine Standard-Version
+    SDDM_CONF="/usr/share/sddm/themes/sugar-candy/theme.conf.user"
+    sudo bash -c "cat > $SDDM_CONF" <<EOF
 [General]
 background=$HOME/.cache/current_wallpaper.png
 mainColor=#e91e63
@@ -121,6 +127,7 @@ selectionColor=#e91e63
 showRoundUserIcon=true
 FacesDir=/usr/share/sddm/faces
 EOF
+fi
 
 # Avatar-Verzeichnis für SDDM registrieren
 sudo mkdir -p /etc/sddm.conf.d
