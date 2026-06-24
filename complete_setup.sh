@@ -82,6 +82,9 @@ install_system_packages() {
 
     sudo pacman -Syu --noconfirm
 
+    # Provider-Konflikte vorab auflösen
+    sudo pacman -S --needed --noconfirm qt6-multimedia-ffmpeg 2>/dev/null || true
+
     PACKAGES=(
         hyprland hyprpaper hyprlock hypridle waybar kitty rofi-wayland
         sddm qt5-graphicaleffects qt5-quickcontrols2 qt5-svg qt6-wayland qt6ct
@@ -108,7 +111,7 @@ install_system_packages() {
         PACKAGES+=(xf86-input-libinput brightnessctl bluez bluez-utils)
     fi
 
-    sudo pacman -S --needed --noconfirm "${PACKAGES[@]}"
+    sudo pacman -S --needed --noconfirm --ignore mesa,mesa-git,lib32-mesa,lib32-mesa-git "${PACKAGES[@]}"
     ok "System-Pakete installiert"
 }
 
