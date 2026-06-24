@@ -1,61 +1,74 @@
 #!/bin/bash
+set -euo pipefail
 
 # --- KONFIGURATION ---
 GITHUB_REPO="https://github.com/Michael2061/nvim.git"
 CONFIG_DIR="$HOME/.config/nvim"
+LOG_FILE="$HOME/nvim-setup-$(date +%Y%m%d_%H%M%S).log"
+START_TIME=$(date +%s)
 
-echo "🚀 Starte Neovim Komplett-Setup auf CachyOS..."
+# --- Colors & Logging ---
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
 
-# 1. System Update
-echo "🔄 Aktualisiere System-Spiegelserver..."
-sudo pacman -Syu --noconfirm
+info()  { echo -e "${CYAN}[INFO]${NC}  $*"; echo "[$(date '+%H:%M:%S')] [INFO] $*" >> "$LOG_FILE"; }
+ok()    { echo -e "${GREEN}[OK]${NC}    $*"; echo "[$(date '+%H:%M:%S')] [OK] $*" >> "$LOG_FILE"; }
+warn()  { echo -e "${YELLOW}[WARN]${NC}  $*"; echo "[$(date '+%H:%M:%S')] [WARN] $*" >> "$LOG_FILE"; }
+error() { echo -e "${RED}[ERROR]${NC} $*"; echo "[$(date '+%H:%M:%S')] [ERROR] $*" >> "$LOG_FILE"; }
 
-# 2. Installation aller Abhängigkeiten (ohne Duplikate)
-echo "📦 Installiere System-Abhängigkeiten..."
-# Erklärung der Pakete:
-# - base-devel, git, unzip, curl: Basis-Werkzeuge
-# - neovim: Der Editor selbst
-# - fd, ripgrep: Schnelle Suche (Telescope)
-# - tree-sitter: Syntax-Parsing
-# - nodejs, npm, python-pip, go, ruby: Laufzeiten für LSPs
-# - lua-language-server: Hilfe für nvim-Konfiguration
-# - nerd-fonts: Symbole für die UI
-sudo pacman -S --noconfirm --needed \
-    base-devel \
-    git \
-    unzip \
-    curl \
-    wget \
-    neovim \
-    fd \
-    ripgrep \
-    tree-sitter \
-    nodejs \
-    npm \
-    python-pip \
-    go \
-    ruby \
-    inotify-tools \
-    shellcheck \
-    lua-language-server \
-    vscode-css-languageserver \
-    ttf-jetbrains-mono-nerd \
-    ttf-nerd-fonts-symbols-common
-
-# 3. Alte Konfiguration sichern (falls vorhanden)
-if [ -d "$CONFIG_DIR" ]; then
-    echo "📂 Bestehende Konfiguration gefunden. Erstelle Backup unter ${CONFIG_DIR}.backup"
-    rm -rf "${CONFIG_DIR}.backup"
-    mv "$CONFIG_DIR" "${CONFIG_DIR}.backup"
+# --- Checks ---
+if [ "$(id -u)" -eq 0 ]; then
+    error "Dieses Script sollte nicht als root ausgeführt werden."
+    exit 1
 fi
 
-# 4. Deine Lua-Konfiguration von GitHub klonen
-echo "📥 Klone deine Neovim-Konfiguration von GitHub..."
-git clone "$GITHUB_REPO" "$CONFIG_DIR"
+if ! sudo -v &>/dev/null; then
+    error "Keine sudo-Rechte. Abbruch."
+    exit 1
+fi
+
+info "Prüfe Internetverbindung..."
+if ! ping -c 1 -W 3 github.com &>/dev/null; then
+    error "Keine Internetverbindung. Abbruch."
+    exit 1
+fi
+ok "Internetverbindung vorhanden"
+
+# 1. System Update
+info "Aktualisiere Paketquellen..."
+sudo pacman -Syu --noconfirm
+
+# 2. Installation aller Abhängigkeiten
+info "Installiere System-Abhängigkeiten..."
+sudo pacman -S --noconfirm --needed \
+    base-devel git unzip curl wget \
+    neovim fd ripgrep tree-sitter \
+    nodejs npm python-pip go ruby \
+    inotify-tools shellcheck \
+    lua-language-server vscode-css-languageserver \
+    ttf-jetbrains-mono-nerd ttf-nerd-fonts-symbols-common
+ok "Abhängigkeiten installiert"
+
+# 3. Alte Konfiguration sichern
+if [ -d "$CONFIG_DIR" ]; then
+    BACKUP_DIR="${CONFIG_DIR}.backup.$(date +%Y%m%d_%H%M%S)"
+    info "Backup vorhandener Konfiguration unter ${BACKUP_DIR}"
+    mv "$CONFIG_DIR" "$BACKUP_DIR"
+fi
+
+# 4. Neovim Config von GitHub klonen
+info "Klone Neovim-Konfiguration von GitHub..."
+if ! git clone "$GITHUB_REPO" "$CONFIG_DIR"; then
+    error "Fehler beim Klonen von $GITHUB_REPO"
+    exit 1
+fi
+ok "Neovim-Konfiguration geklont"
 
 # 5. Abschluss
+DURATION=$(( $(date +%s) - START_TIME ))
 echo ""
-echo "✅ Setup abgeschlossen!"
+ok "Setup abgeschlossen in $((DURATION / 60)) Min $((DURATION % 60)) Sek"
+info "Log: $LOG_FILE"
+echo ""
 echo "-------------------------------------------------------"
 echo "1. Starte jetzt einfach 'nvim'."
 echo "2. Lazy.nvim installiert automatisch alle Plugins."
