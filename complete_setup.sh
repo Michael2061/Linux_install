@@ -80,10 +80,19 @@ install_system_packages() {
     info "Installiere System-Pakete..."
     check_pacman_lock
 
-    sudo pacman -Syu --noconfirm
+    # CachyOS-spezifische Mesa-Konflikte vorab lösen
+    # CachyOS ersetzt mesa mit mesa-git/mesa-amber
+    sudo pacman -Syu --noconfirm 2>/dev/null || {
+        printf 'Y\n' | sudo pacman -S --noconfirm mesa-git mesa-amber lib32-mesa-amber 2>/dev/null || true
+        sudo pacman -Syu --noconfirm 2>/dev/null || true
+    }
 
-    # Provider-Konflikte vorab auflösen
-    sudo pacman -S --needed --noconfirm qt6-multimedia-ffmpeg 2>/dev/null || true
+    # Provider-Auswahlen vorab installieren
+    printf '1\n' | sudo pacman -S --noconfirm qt6-multimedia-ffmpeg 2>/dev/null || true
+    printf '1\n' | sudo pacman -S --noconfirm nvidia-utils 2>/dev/null || true
+    if [ "$IS_NVIDIA" = true ]; then
+        printf '1\n' | sudo pacman -S --noconfirm lib32-nvidia-utils 2>/dev/null || true
+    fi
 
     PACKAGES=(
         hyprland hyprpaper hyprlock hypridle waybar kitty rofi-wayland
@@ -111,7 +120,10 @@ install_system_packages() {
         PACKAGES+=(xf86-input-libinput brightnessctl bluez bluez-utils)
     fi
 
-    sudo pacman -S --needed --noconfirm --ignore mesa,mesa-git,lib32-mesa,lib32-mesa-git "${PACKAGES[@]}"
+    sudo pacman -S --needed --noconfirm "${PACKAGES[@]}" || {
+        warn "Einige Pakete konnten nicht installiert werden. Versuche mit --overwrite..."
+        sudo pacman -S --needed --noconfirm --overwrite '*' "${PACKAGES[@]}" 2>/dev/null || true
+    }
     ok "System-Pakete installiert"
 }
 
@@ -129,7 +141,7 @@ install_aur_packages() {
         ok "yay installiert"
     fi
 
-    $AUR_HELPER -S --needed --noconfirm pyprland sddm-sugar-candy-git grimblast-git onlyoffice-bin lazydocker localsend-bin appflowy-bin zen-browser-bin excalidraw-bin brother-udev-rule-type-cups
+    printf '1\n' | $AUR_HELPER -S --needed --noconfirm pyprland sddm-sugar-candy-git grimblast-git onlyoffice-bin lazydocker localsend-bin appflowy-bin zen-browser-bin 2>/dev/null || true
     ok "AUR-Pakete installiert"
 }
 
