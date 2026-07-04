@@ -10,7 +10,7 @@ LOG_FILE="$HOME/hyprland-setup-$(date +%Y%m%d_%H%M%S).log"
 START_TIME=$(date +%s)
 
 DOTFILES_REPO="https://github.com/Michael2061/Hyperland.git"
-TEMP_DIR="$HOME/temp_dots"
+TEMP_DIR="$(mktemp -d)"
 
 # --- Colors & Logging ---
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
@@ -70,7 +70,7 @@ detect_hardware() {
         ok "Laptop erkannt"
     fi
 
-    if lspci | grep -iI "nvidia" &>/dev/null; then
+    if lspci | grep -i "nvidia" &>/dev/null; then
         IS_NVIDIA=true
         ok "Nvidia Grafikkarte erkannt"
     fi
@@ -141,7 +141,7 @@ install_aur_packages() {
         ok "yay installiert"
     fi
 
-    printf '1\n' | $AUR_HELPER -S --needed --noconfirm pyprland sddm-sugar-candy-git grimblast-git onlyoffice-bin lazydocker localsend-bin appflowy-bin zen-browser-bin 2>/dev/null || true
+    printf '1\n' | "$AUR_HELPER" -S --needed --noconfirm pyprland sddm-sugar-candy-git grimblast-git onlyoffice-bin lazydocker localsend-bin appflowy-bin zen-browser-bin 2>/dev/null || true
     ok "AUR-Pakete installiert"
 }
 
@@ -189,8 +189,9 @@ setup_sddm() {
     fi
 
     sudo mkdir -p "$THEME_DIR/Backgrounds"
-    sudo chown -R "$USER:" "$THEME_DIR/Backgrounds/"
-    sudo chown -R "$USER:" /usr/share/sddm/faces/
+    sudo mkdir -p /usr/share/sddm/faces/
+    # Hinweis: Besitzerwechsel auf "$USER" ist hier nicht nötig – SDDM läuft als root
+    # und benötigt root-Besitzer für die Theme-Verzeichnisse.
 }
 
 setup_nvidia() {

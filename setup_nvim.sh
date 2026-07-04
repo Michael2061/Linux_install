@@ -33,6 +33,16 @@ if ! ping -c 1 -W 3 github.com &>/dev/null; then
 fi
 ok "Internetverbindung vorhanden"
 
+# Pacman Lock prüfen
+if [ -f /var/lib/pacman/db.lck ]; then
+    warn "Pacman ist gesperrt (db.lck). Warte 5 Sekunden..."
+    sleep 5
+    if [ -f /var/lib/pacman/db.lck ]; then
+        error "Pacman-Sperre besteht weiterhin. Manuell prüfen: sudo rm /var/lib/pacman/db.lck"
+        exit 1
+    fi
+fi
+
 # 1. System Update
 info "Aktualisiere Paketquellen..."
 sudo pacman -Syu --noconfirm
@@ -52,13 +62,18 @@ ok "Abhängigkeiten installiert"
 if [ -d "$CONFIG_DIR" ]; then
     BACKUP_DIR="${CONFIG_DIR}.backup.$(date +%Y%m%d_%H%M%S)"
     info "Backup vorhandener Konfiguration unter ${BACKUP_DIR}"
-    mv "$CONFIG_DIR" "$BACKUP_DIR"
+    cp -r "$CONFIG_DIR" "$BACKUP_DIR"
+    rm -rf "$CONFIG_DIR"
 fi
 
 # 4. Neovim Config von GitHub klonen
 info "Klone Neovim-Konfiguration von GitHub..."
 if ! git clone "$GITHUB_REPO" "$CONFIG_DIR"; then
     error "Fehler beim Klonen von $GITHUB_REPO"
+    if [ -n "${BACKUP_DIR:-}" ] && [ -d "$BACKUP_DIR" ]; then
+        info "Stelle Backup wieder her..."
+        mv "$BACKUP_DIR" "$CONFIG_DIR"
+    fi
     exit 1
 fi
 ok "Neovim-Konfiguration geklont"
